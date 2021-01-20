@@ -1,0 +1,1 @@
+Modified version of SDL2_gfxPrimitives.c and SDL2_gfxPrimitives.h from BBC BASIC for SDL 2.0 project (https://github.com/rtrussell/BBCSDL) to enable swapping original versions from SDL2_gfx library with modifications from BBC BASIC for SDL 2.0 project.

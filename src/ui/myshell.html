@@ -1,0 +1,572 @@
+<!--
+Copyright 2020-2021 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <meta property="og:url" content="http://MonsterMash.zone" />
+    <meta property="og:title" content="Monster Mash: New Sketch-Based Modeling and Animation Tool" />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content="Monster Mash is a new sketch-based modeling and animation tool that allows you to quickly sketch a character, inflate it into 3D, and promptly animate it. You can perform all interactions in the sketching plane. No 3D manipulation is required." />
+    <meta property="og:image" content="http://monstermash.zone/imgs/thumbnail_wide.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1221" />
+    <meta property="og:image:height" content="641" />
+
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Monster Mash: New Sketch-Based Modeling and Animation Tool</title>
+    <link rel="stylesheet" href="includes/main.css">
+  </head>
+  <body>
+    <!-- Modal dialog: Quick tutorial -->
+    <div class="modal fade" id="modalDialogQuickTutorial" tabindex="-1" aria-labelledby="modalDialogQuickTutorial" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title" id="modalDialogQuickTutorialLabel">Monster Mash Help</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+          
+            <div class="px-xl-5 py-xl-4">
+              <h4>Quick Start</h4>
+              
+              <p>Follow these three steps to quickly become familiar with the basic usage of Monster Mash. See the rest of the page for more details.</p>
+              
+              <div class="containter text-center p-2">
+                <div class="row">
+                  <div class="col-lg">
+                    <div class="py-2">
+                      <span class="buttonModeNumbers bg-dark text-white">1</span><b>Draw</b> a character
+                    </div>
+                    <div class="py-2">
+                      <div class="embed-responsive embed-responsive-1by1 tutorialVideos">
+                        <video class="embed-responsive-item rounded p-1" width="432" height="432" loop muted playsinline>
+                          <source src="imgs/tutorial-mode1.mov" type="video/mp4">
+                        </video>
+                        <div class="embed-responsive-item rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg">
+                    <div class="py-2">
+                      <span class="buttonModeNumbers bg-dark text-white">2</span><b>Inflate</b> it and move it around
+                    </div>
+                    <div class="py-2">
+                      <div class="embed-responsive embed-responsive-1by1 tutorialVideos">
+                        <video class="embed-responsive-item rounded p-1" width="432" height="432" loop muted playsinline>
+                          <source src="imgs/tutorial-mode2.mov" type="video/mp4">
+                        </video>
+                        <div class="embed-responsive-item rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg">
+                    <div class="py-2">
+                      <span class="buttonModeNumbers bg-dark text-white">3</span><b>Animate</b> it
+                    </div>
+                    <div class="py-2">
+                      <div class="embed-responsive embed-responsive-1by1 tutorialVideos">
+                        <video class="embed-responsive-item rounded p-1" width="432" height="432" loop muted playsinline>
+                          <source src="imgs/tutorial-mode3.mov" type="video/mp4">
+                        </video>
+                        <div class="embed-responsive-item rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            
+              <h4 class="pt-5">Example Gallery</h4>
+              <p>Click/tap on an example below to open it.</p>
+              <div class="containter text-center">
+                <div class="row">
+                  <div class="col py-2">
+                    <div class="embed-responsive embed-responsive-1by1">
+                      <a href="#" class="examples" data-exampleid="0">
+                        <img src="imgs/example-antelope.jpg" width="600" height="600" class="embed-responsive-item rounded">
+                      </a>
+                    </div>
+                  </div>
+                  <div class="col py-2">
+                    <div class="embed-responsive embed-responsive-1by1">
+                      <a href="#" class="examples" data-exampleid="1">
+                        <img src="imgs/example-bird.jpg" width="600" height="600" class="embed-responsive-item rounded">
+                      </a>
+                    </div>
+                  </div>
+                  <div class="w-100 d-lg-none"></div>
+                  <div class="col py-2">
+                    <div class="embed-responsive embed-responsive-1by1">
+                      <a href="#" class="examples" data-exampleid="2">
+                        <img src="imgs/example-box.jpg" width="600" height="600" class="embed-responsive-item rounded">
+                      </a>
+                    </div>
+                  </div>
+                  <div class="col py-2">
+                    <div class="embed-responsive embed-responsive-1by1">
+                      <a href="#" class="examples" data-exampleid="3">
+                        <img src="imgs/example-dino.jpg" width="600" height="600" class="embed-responsive-item rounded">
+                      </a>
+                    </div>
+                  </div>
+                  <div class="w-100"></div>
+                  <div class="col py-2">
+                    <div class="embed-responsive embed-responsive-1by1">
+                      <a href="#" class="examples" data-exampleid="4">
+                        <img src="imgs/example-dog.jpg" width="600" height="600" class="embed-responsive-item rounded">
+                      </a>
+                    </div>
+                  </div>
+                  <div class="col py-2">
+                    <div class="embed-responsive embed-responsive-1by1">
+                      <a href="#" class="examples" data-exampleid="5">
+                        <img src="imgs/example-heart.jpg" width="600" height="600" class="embed-responsive-item rounded">
+                      </a>
+                    </div>
+                  </div>
+                  <div class="w-100 d-lg-none"></div>
+                  <div class="col py-2">
+                    <div class="embed-responsive embed-responsive-1by1">
+                      <a href="#" class="examples" data-exampleid="6">
+                        <img src="imgs/example-chihuahua.jpg" width="600" height="600" class="embed-responsive-item rounded">
+                      </a>
+                    </div>
+                  </div>
+                  <div class="col py-2">
+                    <div class="embed-responsive embed-responsive-1by1">
+                      <a href="#" class="examples" data-exampleid="7">
+                        <img src="imgs/example-tree.jpg" width="600" height="600" class="embed-responsive-item rounded">
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <h4 class="pt-5">Give us Feedback</h4>
+
+              <p>We started a discussion thread about Monster Mash on <a href="https://forums.cgsociety.org/t/monster-mash-a-tool-for-casual-3d-modeling-and-animation/2061144" target="_blank">CGSociety forum</a>. Let us know what you think about the tool in this forum!</p>
+              
+              <h4 class="pt-5">What's New</h4>
+              
+              <table class="whatsNewTable">
+                <tr>
+                  <td>December&nbsp;15,&nbsp;2020</td>
+                  <td>Added a link to a <a href="https://forums.cgsociety.org/t/monster-mash-a-tool-for-casual-3d-modeling-and-animation/2061144" target="_blank">discussion thread about Monster Mash</a>.</td>
+                </tr>
+                <tr>
+                  <td>December&nbsp;2,&nbsp;2020</td>
+                  <td>The current animation frame can be exported to the <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file" target="_blank">Wavefront .obj file</a> also with a material .mtl and texture .png files. <a href="#exportToOBJInfo">Read more&hellip;</a></td>
+                </tr>
+              </table>
+              
+              
+<h4 class="pt-5">Detailed Information</h4>
+
+<h5 class="pt-3">1. Getting Started</h5>
+
+<p>Monster Mash is a new sketch-based modeling and animation tool that allows you to quickly sketch a character, inflate it into 3D, and promptly animate it. You can perform all interactions in the sketching plane. No 3D manipulation is required.</p>
+
+<p>This demo accompanies a paper Dvorožňák et al.: <a href="https://dcgi.fel.cvut.cz/home/sykorad/monster_mash" target="_blank">Monster Mash: A Single-View Approach to Casual 3D Modeling and Animation</a> published in <em>ACM Transactions on Graphics</em> 39(6):214 and presented at SIGGRAPH Asia 2020 conference. The demo is <b>free to use for evaluation and research purposes</b>.</p>
+
+<h6 class="pt-2">1.1. Requirements</h6>
+
+<p>Monster Mash demo should work on any platform in a recent browser that supports WebAssembly &amp; WebGL 1.0. The device should also have sufficient computational resources. If the Monster Mash demo is crashing on your device, please check if you have installed the latest version of the operating system and your favorite web browser.</p>
+
+<p>Although the Monster Mash demo should also work on recent more powerful phones, it is preferable to use it on a tablet with a larger screen. The current user interface is not optimized for small screens.</p>
+
+<p>Monster Mash demo can be controlled using a mouse, touch, or stylus. For the best experience, we recommend using a stylus on a tablet.</p>
+
+<h5 class="pt-3">2. Creation Modes</h5>
+
+<p>The tool offers three basic modes of creation: Draw, Inflate, and Animate.</p>
+
+<h6 class="pt-2">2.1. Draw Mode</h6>
+
+<p>In the <button type="button" class="btn btn-sm disabled inactive" disabled><span class="buttonModeNumbers">1</span>Draw</button>
+ mode, you can sketch a character part by part using strokes that delineate boundaries of individual regions. The order in which you create the regions corresponds to their relative order in depth. Each region's boundary is represented by a single stroke (opened or closed) that you can create using a click/tap-move-release sequence (using the left mouse button or a stylus/touch). Closed strokes delineate regions that represent the character's main body. Opened strokes are used for regions that are smoothly attached to other regions (e.g., limbs). The gap in the stroke is automatically closed by a line that outlines a junction along which the newly drawn region is smoothly connected to another region.</p>
+
+<p>In addition to drawing strokes, you can click/tap anywhere inside the region to select it or double-click/tap to make its duplicate and place it behind already drawn regions. Selected regions can be deleted using the <button type="button" class="btn btn-sm buttonRemoveInactive disabled inactive" disabled>&nbsp;</button> button in the menu. You can also select multiple regions by clicking/tapping and dragging a selection rectangle over them, or select/deselect them all in the <button type="button" class="btn btn-sm disabled inactive dropdown-toggle buttonOtherMenu" disabled></button> sub-menu.</p>
+
+<p>Now, let's try to create a simple monster. We start by scribbling the main body; then we add limbs and eyes. As we need limbs to be attached to the main body, we draw an open curve, and the system automatically connects it. To create limbs and eyes on both sides of the main body, we duplicate them using a double-click/tap.</p>
+
+              <p>
+                <figure class="px-lg-5">
+                  <video class="mx-auto d-block rounded" width="624" height="392" style="width: 60%; height: auto;" autoplay loop muted playsinline controls>
+                    <source src="imgs/help-drawmode.mov" type="video/mp4">
+                  </video>
+                  <figcaption class="text-center">Draw mode</figcaption>
+                </figure>
+              </p>
+
+              
+<h6 class="pt-2">2.2. Inflate Mode</h6>
+
+<p>The <button type="button" class="btn btn-sm disabled inactive" disabled><span class="buttonModeNumbers">2</span>Inflate</button> mode is useful for a quick preview of the resulting 3D model. You can rotate (middle mouse button) or pan (with shift pressed). If you are using a stylus/touch or you do not have a middle mouse button, you need to switch on the <button type="button" class="btn btn-sm buttonRotateInactive disabled inactive" disabled>&nbsp;</button> button in the main menu and use click/tap-move-release to rotate (left mouse button). When the <button type="button" class="btn btn-sm buttonRotateInactive disabled inactive" disabled>&nbsp;</button> button is off, you can play with the model by clicking/tapping on its parts and moving them around.</p>
+
+<h6 class="pt-2">2.3. Animation Mode</h6>
+
+<p>After clicking/tapping on <button type="button" class="btn btn-sm disabled inactive" disabled><span class="buttonModeNumbers">3</span>Animate</button> button in the menu the model can be animated by placing control pins on it and moving them around. Tap or click using left mouse button to create a control pin and drag it to make it move. Control pins can be selected by clicking/tapping on them and deleted using the <button type="button" class="btn btn-sm buttonRemoveInactive disabled inactive" disabled>&nbsp;</button> button in the menu. You can also select multiple control pins by clicking/tapping and dragging a selection rectangle over them. Alternatively, you can select/deselect all control pins or change their visibility in the <button type="button" class="btn btn-sm disabled inactive dropdown-toggle buttonOtherMenu" disabled></button> sub-menu where you can also use option <b>Copy selected animation</b> and <b>Paste animation</b> to transfer already recorded motion to other control pins.</p>
+
+              <p>
+                <figure class="px-lg-5">
+                  <video class="mx-auto d-block rounded" width="624" height="392" style="width: 60%; height: auto;" autoplay loop muted playsinline controls>
+                    <source src="imgs/help-inflatemode.mov" type="video/mp4">
+                  </video>
+                  <figcaption class="text-center">Animation mode: Placing control pins</figcaption>
+                </figure>
+              </p>
+
+
+<p>The position of multiple control pins can be recorded in time and played back to create more complex animation. To activate the recording, press the <button type="button" class="btn btn-sm buttonRecordInactive disabled inactive" disabled><span>&nbsp;</span></button> button (it will turn red). Then by tapping or clicking on a control pin, the recording starts and stops when the mouse button, touch, or stylus is released. The animation can be paused and played back again by pressing the <button type="button" class="btn btn-sm buttonPauseInactive disabled inactive" disabled>&nbsp;</button> and <button type="button" class="btn btn-sm buttonPlayInactive disabled inactive" disabled>&nbsp;</button> button.</p>
+
+              <p>
+                <figure class="px-lg-5">
+                  <video class="mx-auto d-block rounded" width="624" height="392" style="width: 60%; height: auto;" autoplay loop muted playsinline controls>
+                    <source src="imgs/help-animatemode.mov" type="video/mp4">
+                  </video>
+                  <figcaption class="text-center">Animation mode: Recording position of control pins</figcaption>
+                </figure>
+              </p>
+              
+<p>The system uses a simple strategy the synchronize the motion with other pins. The first pin motion you record will define the length of the entire animation cycle. A pin that corresponds to this master motion is marked with green color, and its position in the first frame is denoted as a bold black dot laying on its recorded motion trajectory. The system automatically starts the motion of a new recorded control pin at a frame that corresponds to the currently played frame of the master pin. You can shift this relative position in time using plus and minus keys on the keyboard.</p>
+
+<h6 class="pt-2">2.4. Redraw Mode</h6>
+
+<p>The <button type="button" class="btn btn-sm disabled inactive" disabled><span class="buttonModeNumbers">1</span>Draw</button> button has a special <b>Redraw</b> option, which you can use to alter the shape of existing regions by re-sketching them without modifying their relative depth order. To do that, you can select a region that you want to change and redraw it. Note that <em>it is necessary to redraw the entire shape</em> of the modified region.</p>
+
+              <p>
+                <figure class="px-lg-5">
+                  <video class="mx-auto d-block rounded" width="1920" height="1080" style="width: 60%; height: auto;" autoplay loop muted playsinline controls>
+                    <source src="imgs/help-redrawmode.mov" type="video/mp4">
+                  </video>
+                  <figcaption class="text-center">Redraw mode</figcaption>
+                </figure>
+              </p>
+
+
+<h5 class="pt-3">3. Create/Open/Save/Export Project</h5>
+
+<p>Monster Mash demo starts with a new empty project. You can always get back to this initial state by clicking/tapping on the <button type="button" class="btn btn-sm buttonNewProjectInactive disabled inactive" disabled>&nbsp;</button> button in the main menu. You can also open an existing project from your local hard-drive using the <button type="button" class="btn btn-sm buttonOpenProjectInactive disabled inactive" disabled>&nbsp;</button> button or load some of the examples visible on this help page. When you create an animated 3D model, you can save it onto your local hard-drive using the <button type="button" class="btn btn-sm buttonSaveProjectInactive disabled inactive" disabled>&nbsp;</button> button.</p>
+
+<p>Optionally, you can upload a <em>template image</em> (using <button type="button" class="btn btn-sm buttonOpenProjectInactive disabled inactive" disabled>&nbsp;</button> button's option <b>Import template image&hellip;</b>) over which you can then trace. This template image will also be used as a texture of the final 3D model. Alternatively, you can also upload a <em>background image</em> (using <button type="button" class="btn btn-sm buttonOpenProjectInactive disabled inactive" disabled>&nbsp;</button> button's option <b>Import background image&hellip;</b>) which will replace the default white background. You can show/hide the template image as well as your custom background by checking/unchecking their visibility in the <button type="button" class="btn btn-sm disabled inactive dropdown-toggle buttonOtherMenu" disabled></button> sub-menu or alternatively switch on/off the shading effect using <b>Enable shading</b> option.</p>
+
+<p>When you already draw a shape in the Monster Mash demo which you would like to texture, use <button type="button" class="btn btn-sm buttonSaveProjectInactive disabled inactive" disabled>&nbsp;</button> button's option <b>Export a template image&hellip;</b>. This option allows you to save an image of the current shape on your hard-drive over which you can then draw using your favorite drawing/painting tool and then upload it back using the <button type="button" class="btn btn-sm buttonOpenProjectInactive disabled inactive" disabled>&nbsp;</button> button's option <b>Import template image&hellip;</b>.</p>
+
+<a name="exportToOBJInfo"></a>
+The current animation frame can be exported to the <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file" target="_blank">Wavefront .obj file</a> by selecting <b>Export the current animation frame as .obj file&hellip;</b> from the sub-menu of the save button <button type="button" class="btn btn-sm buttonSaveProjectInactive disabled inactive" disabled>&nbsp;</button>. If a template image is mapped to the mesh and <b>Show template image</b> option in the <button type="button" class="btn btn-sm disabled inactive dropdown-toggle buttonOtherMenu" disabled></button> sub-menu is checked, a material .mtl file with a .png texture image is also exported.
+
+
+<h5 class="pt-3">4. Other Settings</h5>
+
+<p>In the <button type="button" class="btn btn-sm disabled inactive dropdown-toggle buttonOtherMenu" disabled></button> sub-menu, there is also an <b>Other settings</b> option where you can enable/disable experimental <b>armpit stitching</b> algorithm and <b>normal smoothing</b> of the resulting 3D mesh.</p>
+           
+
+<h5 class="pt-3">5. Mouse buttons</h5>
+<p>
+<table>
+<tr>
+  <td valign="top"><img src="imgs/mouse_Left.jpg"></td>
+  <td>&nbsp;</td>
+  <td valign="top">
+    <ul>
+      <li>Draw Mode:
+        <ul>
+          <li>Click-and-move: Draw a boundary of a main body part or a part that lies <em>in front</em> of already drawn parts.</li>
+          <li>Single click: Select an existing part that is closest to the mouse pointer and lies <em>closest</em> in depth.</li>
+          <li>Shift + Single click: Add an existing part to the current selection or remove it from the current selection.</li>
+          <li>Double click: Duplicate an existing part and move it in depth to lay <em>behind</em> the other drawn parts.</li>
+        </ul>
+      </li>
+      <li>Inflation Mode:
+        <ul>
+          <li>Click-and-move: Move a part of the model that is closest to the mouse pointer and lies <em>closest</em> in depth.</li>
+        </ul>
+      </li>
+      <li>Animation Mode:
+        <ul>
+          <li>Click: (a)&nbsp;Create a new control pin so that it is closest to the mouse pointer and lies on a part that is <em>closest</em> in depth
+          or (b)&nbsp;select already existing control pin that is closest to the mouse pointer and lies <em>closest</em> in depth.</li>
+          <li>Shift + Click: Add an existing control pin to the current selection or remove it from the current selection.</li>
+          <li>Click-and-move: Create and animate a new control pin or just animate closest pin.</li>
+        </ul>
+      </li>
+    </ul>
+  </td>
+</tr>
+<tr>
+  <td class="pt-3" valign="top"><img src="imgs/mouse_Wheel.jpg"></td>
+  <td class="pt-3">&nbsp;</td>
+  <td class="pt-3" valign="top">
+    <ul>
+      <li>Inflation &amp; Animation Mode:
+          <ul>
+          <li>Click-and-move: Rotate (or pan with Shift pressed) the 3D model.</li>
+          </ul>
+      </li>
+    </ul>
+  </td>
+</tr>
+<tr>
+  <td class="pt-3" valign="top"><img src="imgs/mouse_Right.jpg"></td>
+  <td class="pt-3">&nbsp;</td>
+  <td class="pt-3" valign="top">
+    <ul>
+      <li>
+        Right mouse button performs the same actions as the left mouse button with these exceptions:
+        <ul>
+          <li>It draws <em>behind</em> already drawn parts.</li>
+          <li>It selects a part that lies <em>farthest</em> in depth.</li>
+          <li>It creates a new control pin so that it lies on a part that is <em>farthest</em> in depth or selects a control pin that lies <em>farthest</em> in depth.</li>
+          <li>It duplicates an existing part and moves it in depth to lay <em>in front</em> of the other drawn parts.</li>
+        </ul>
+      </li>
+    </ul>
+  </td>
+</tr>
+</table>
+</p>
+
+<h5 class="pt-3">6. Hot-keys</h5>
+<p>
+<table>
+<tr><td><span class="keyBox">N</span></td><td>&nbsp;</td><td>Start a new project.</td></tr>
+<tr><td><span class="keyBox keySmallerFont ctrl">Ctrl</span> + <span class="keyBox">O</span></td><td>&nbsp;</td><td>Open an existing project.</td></tr>
+<tr><td><span class="keyBox keySmallerFont ctrl">Ctrl</span> + <span class="keyBox">S</span></td><td>&nbsp;</td><td>Save a current project.</td></tr>
+<tr><td><span class="keyBox">1</span></td><td>&nbsp;</td><td>Switch to Draw Mode.</td></tr>
+<tr><td><span class="keyBox">2</span></td><td>&nbsp;</td><td>Switch to Inflate Mode.</td></tr>
+<tr><td><span class="keyBox">3</span></td><td>&nbsp;</td><td>Switch to Animate Mode.</td></tr>
+<tr><td><span class="keyBox">E</span></td><td>&nbsp;</td><td>Switch animation recording mode on/off. The actual recording of pin position will start after clicking/tapping on a pin and stop after releasing.</td></tr>
+<tr><td><span class="keyBox keyRectBig keySmallerFont">Space</span></td><td>&nbsp;</td><td>Play/Pause animation.</td></tr>
+<tr><td><span class="keyBox">H</span></td><td>&nbsp;</td><td>Switch display of control pins on/off.</td></tr>
+<tr><td><span class="keyBox keySmallerFont ctrl">Ctrl</span> + <span class="keyBox">C</span></td><td>&nbsp;</td><td>Copy a selected animation.</td></tr>
+<tr><td><span class="keyBox keySmallerFont ctrl">Ctrl</span> + <span class="keyBox">V</span></td><td>&nbsp;</td><td>Paste animation to all selected control pins.</td></tr>
+<tr><td><span class="keyBox keySmallerFont ctrl">Ctrl</span> + <span class="keyBox">A</span></td><td>&nbsp;</td><td>Select all parts or control pins.</td></tr>
+<tr><td><span class="keyBox keySmallerFont">Esc</span></td><td>&nbsp;</td><td>Deselect all parts or control pins.</td></tr>
+<tr><td><span class="keyBox keySmallerFont">Delete</span> or <span class="keyBox keyRect keySmallerFont">Backspace</span></td><td>&nbsp;</td><td>Remove selected part or control pin.</td></tr>
+<tr><td><span class="keyBox">+</span></td><td>&nbsp;</td><td>Offset control pin animation forward in time.</td></tr>
+<tr><td><span class="keyBox">&minus;</span></td><td>&nbsp;</td><td>Offset control pin animation backward in time.</td></tr>
+</table>
+</p>
+              
+              <p class="text-right"><small>Monster Mash v. <span class="appVersion"></span></small></p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal dialog: Settings -->
+    <div class="modal fade" id="modalDialogSettings" tabindex="-1" aria-labelledby="modalDialogSettingsLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title" id="modalDialogSettingsLabel">Settings</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row p-2">
+              <div class="col-5">
+                Armpits stitching (experimental):
+              </div>
+              <div class="col-7">
+                <label>
+                  <input type="checkbox" autocomplete="off" id="buttonEnableArmpitsStitching" aria-checked="false"> Enable
+                </label>
+              </div>
+            </div>            
+            <div class="row p-2">
+              <div class="col-5">
+                Normal smoothing:
+              </div>
+              <div class="col-7">
+                <label>
+                  <input type="checkbox" autocomplete="off" id="buttonEnableNormalSmoothing" aria-checked="true" checked> Enable
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="loadingLogo" class="emscripten">
+      <img src="imgs/loading.jpg" width="806" height="298" />
+    </div>
+    <figure style="overflow:visible;" id="spinner" class="text-center">
+      <div class="spinner-border text-primary" role="status"></div>
+    </figure>
+    <div class="emscripten" id="status">Downloading&hellip;</div>
+    <div class="emscripten">
+      <progress value="0" max="100" id="progress" hidden=1></progress>  
+    </div>
+
+    <div id="mainContent">
+      <nav class="navbar navbar-expand sticky-top navbar-light bg-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center d-flex flex-wrap" id="navbarNavDropdown">
+          <div class="navbar-brand d-none d-xl-block text-center">
+            Monster Mash <small>demo</small>
+          </div>
+
+          <!-- File buttons -->
+          <div class="d-flex flex-wrap justify-content-center">
+
+            <button type="button" id="buttonNewProject" class="btn buttonNewProject mr-1 mb-1" data-tooltip="tooltip" title="New project" role="button" tabindex="0">&nbsp;</button>
+            <div class="btn-group mr-1 mb-1">
+              <label class="btn buttonOpenProject" data-tooltip="tooltip" title="Open project&hellip;">
+                <input type="file" id="buttonOpenProject" accept=".zip" hidden>&nbsp;
+              </label>
+              <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false" data-tooltip="tooltip" title="More import options"></button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="#" id="dropdownOpenProject">Open project&hellip;</a>
+                <label class="dropdown-item" data-tooltip="tooltip" title="Import a template image for tracing and using as a texture for 3D model">
+                  <input type="file" id="buttonImportTemplateImage" accept=".png,.jpg,.jpeg,.bmp" hidden>Import template image&hellip;
+                </label>
+                <label class="dropdown-item" data-tooltip="tooltip" title="Import a background image that will be placed behind 3D model">
+                  <input type="file" id="buttonImportBackgroundImage" accept=".png,.jpg,.jpeg,.bmp" hidden>Import background image&hellip;
+                </label>
+              </div>
+            </div>
+            <div class="btn-group mr-3 mb-1">
+              <button type="button" class="btn buttonSaveProject" id="buttonSaveProject" data-tooltip="tooltip" title="Save project&hellip;">&nbsp;</button>
+              <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false" data-tooltip="tooltip" title="More export options"></button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="#" id="dropdownSaveProject">Save project&hellip;</a>
+                <a class="dropdown-item" href="#" id="buttonExportTextureTemplate">Export a template for texturing&hellip;</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item disabled" href="#" id="buttonExportAsOBJ">Export the current animation frame as .obj file&hellip;</a>
+              </div>
+            </div>
+
+            <div class="btn-group mr-1 mb-1">
+              <button type="button" class="btn buttonMode buttonImageMode active" data-toggle="button" aria-pressed="true" id="buttonDraw" data-tooltip="tooltip" title="Sketch an object from a single viewpoint">
+                <span class="buttonModeNumbers">1</span>Draw
+              </button>
+              <button type="button" class="btn buttonMode buttonImageMode" data-toggle="button" id="buttonRedraw" data-tooltip="tooltip" data-tooltip="tooltip" title="Redraw entire selected part">
+                <span class="buttonModeNumbers">1</span>Redraw
+              </button>
+              <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-expanded="false" data-tooltip="tooltip" title="More drawing options"></button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item dropdownImageMode active" id="dropdownImageModeDraw" href="#" data-tooltip="tooltip" title="Sketch an object from a single viewpoint">Draw</a>
+                <a class="dropdown-item dropdownImageMode" id="dropdownImageModeRedraw" href="#" data-tooltip="tooltip" title="Redraw entire selected part">Redraw</a>
+              </div>
+            </div>
+            <button type="button" class="btn buttonMode mr-1 mb-1" data-toggle="button" id="buttonInflateMode" data-tooltip="tooltip" title="Inflate a 3D model and move it around">
+              <span class="buttonModeNumbers">2</span>Inflate
+              <span id="spinnerInflateMode" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn buttonMode mr-3 mb-1" data-toggle="button" id="buttonAnimate" data-tooltip="tooltip" title="Animate 3D model">
+              <span class="buttonModeNumbers">3</span>Animate
+              <span id="spinnerAnimate" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            </button>
+
+            <div class="btn-group-toggle animationButtons mr-3 mb-1" data-toggle="buttons">
+              <label class="btn buttonPlay active disabled" data-tooltip="tooltip" title="Play animation">
+                <div><input type="radio" name="buttonPlayPause" value="1" autocomplete="off" id="buttonPlay" checked disabled>&nbsp;</div>
+              </label>
+              <label class="btn buttonPause disabled" data-tooltip="tooltip" title="Pause animation">
+                <div><input type="radio" name="buttonPlayPause" value="0" autocomplete="off" id="buttonPause" disabled>&nbsp;</div>
+              </label>
+              <label class="btn buttonRecord disabled" data-tooltip="tooltip" title="Record a new animation by dragging a control pin">
+                <div><input type="checkbox" autocomplete="off" id="buttonRecord" disabled>&nbsp;</div>
+              </label>
+            </div>
+            
+            <div class="btn-group mr-3 mb-1 buttonsViewOptions">
+              <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn disabled buttonRotate" id="buttonRotate" data-tooltip="tooltip" title="Switch on/off rotate mode">
+                  <input type="checkbox" autocomplete="off" disabled>&nbsp;
+                </label>
+              </div>
+              <button type="button" class="btn dropdown-toggle dropdown-toggle-split disabled" data-toggle="dropdown" aria-expanded="false" data-tooltip="tooltip" title="More view options" disabled></button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="#" id="buttonResetView">Reset view</a>
+              </div>
+            </div>
+
+            <button type="button" id="buttonRemove" class="btn mr-3 mb-1 buttonRemove" data-tooltip="tooltip" title="Remove selected regions or control pins">&nbsp;</button>
+
+            <div>
+              <div class="btn-group mr-1 mb-1">
+                <button id="buttonShowHelp" type="button" class="btn" data-tooltip="tooltip" data-tooltip="tooltip" title="Find out how to use Monster Mash, and see what's new">Help</button>
+              </div>
+              
+              <div class="btn-group mb-1" role="group">
+                <button id="btnGroupDrop1" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-tooltip="tooltip" title="Show menu"></button>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="btnGroupDrop1">
+                  <label class="dropdown-item" data-tooltip="tooltip" data-placement="right" title="Show template image or apply it as a texture">
+                    <input type="checkbox" autocomplete="off" id="buttonShowTemplateImage" aria-checked="false"> Show template image
+                  </label>
+                  <label class="dropdown-item">
+                    <input type="checkbox" autocomplete="off" id="buttonShowBackgroundImage" aria-checked="false"> Show background image
+                  </label>
+                  <label class="dropdown-item" title="">
+                    <input type="checkbox" autocomplete="off" id="buttonShowControlPins" aria-checked="true" checked> Show control pins
+                  </label>
+                  <label class="dropdown-item" data-tooltip="tooltip" data-placement="right" title="Applies additional shading on a texture to enhance the 3D look of the model">
+                    <input type="checkbox" autocomplete="off" id="buttonUseTextureShading" aria-checked="true" checked> Enable shading
+                  </label>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="#" id="buttonSelectAll">Select all</a>
+                  <a class="dropdown-item" href="#" id="buttonDeselectAll">Deselect all</a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="#" id="buttonCopyAnimation">Copy selected animation</a>
+                  <a class="dropdown-item" href="#" id="buttonPasteAnimation">Paste animation</a>
+                  <div class="dropdown-divider"></div>
+                  <button id="buttonShowSettings" type="button" class="dropdown-item">Other settings&hellip;</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div class="canvasParent">
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+      </div>
+
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="includes/module.js"></script>
+
+    {{{ SCRIPT }}}
+    
+    <!-- js tools -->
+    <script type="text/javascript" src="includes/FileSaver.js"></script>
+
+    <!-- for bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" src="includes/main.js"></script>
+  </body>
+</html>
