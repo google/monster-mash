@@ -1,8 +1,5 @@
-FROM emscripten/emsdk
+FROM emscripten/emsdk:2.0.14
 
-# Patching sdl2_ttf.py from latest git commit;
-# https://github.com/emscripten-core/emscripten/commit/0aec639126c5274236c40351f77063b8addc85cc#diff-de4f4c81202cdb643f091b729a3dfcce46b59884ad174a0b83e25c3b2627029c
-COPY ./sdl2_ttf.py /emsdk/upstream/emscripten/tools/ports/sdl2_ttf.py
 
 COPY . /usr/src/monster-mash
 WORKDIR /usr/src/monster-mash
