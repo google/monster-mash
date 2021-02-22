@@ -22,7 +22,7 @@ use GitHub pull requests for this purpose. Consult
 [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
 information on using pull requests.
 
-# Coding style
+## Coding style
 
 Please use clang-format tool with --style=Google parameter to format your code.
 
