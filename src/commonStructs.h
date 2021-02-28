@@ -142,10 +142,10 @@ struct RecData {
   bool interiorDepthConditions = false;
 };
 
-typedef struct {
+struct PauseStatus{
   bool defPaused = false;
   bool animPaused = false;
-} PauseStatus;
+};
 
 struct CameraData {
   bool ortho = true;
