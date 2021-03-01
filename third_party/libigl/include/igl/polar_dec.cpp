@@ -16,6 +16,12 @@
 #include <iostream>
 #include <cfenv>
 
+#ifndef FE_UNDERFLOW
+// removed from emscripten
+// https://github.com/emscripten-core/emscripten/commit/3d6116296e8bc2ed601f109edcbbd9e33ed3b705
+#define FE_UNDERFLOW 16
+#endif
+
 // From Olga's CGAL mentee's ARAP code
 template <
   typename DerivedA,
