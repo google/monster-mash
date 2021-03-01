@@ -1,26 +1,41 @@
-FROM ubuntu:20.04
+FROM ubuntu
 
-RUN apt-get update -y
-RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
-RUN apt-get install -y build-essential cmake libsdl2-dev wget unzip git python3
+RUN apt-get update -y \
+    && DEBIAN_FRONTEND="noninteractive" apt-get -y install \
+        cmake git python3 curl unzip
 
-# Install emscripten
-RUN git clone https://github.com/emscripten-core/emsdk.git
-WORKDIR /emsdk
-RUN ./emsdk install latest
-RUN ./emsdk activate latest
-RUN /bin/bash -c "source ./emsdk_env.sh"
+RUN cd /opt \
+    && git clone https://github.com/emscripten-core/emsdk.git \
+    && cd emsdk \
+    && ./emsdk install latest \
+    && ./emsdk activate latest
 
-COPY . /usr/src/monster-mash
-WORKDIR /usr/src/monster-mash
+COPY third_party /app/third_party
+WORKDIR /app/third_party/triangle
+RUN curl http://www.netlib.org/voronoi/triangle.zip -O \
+    && unzip triangle.zip \
+    && rm triangle.zip
 
-# Download triangle library.
-RUN wget http://www.netlib.org/voronoi/triangle.zip triangle.zip
-RUN unzip triangle.zip -d third_party/triangle
+COPY data /app/data
+COPY src /app/src
+WORKDIR /app/src
+RUN /bin/bash -c "source "/opt/emsdk/emsdk_env.sh" \
+    && mkdir -p build/Release && cd build/Release \
+    && cmake ../../. \
+        -D CMAKE_C_COMPILER=emcc \
+        -D CMAKE_CXX_COMPILER=em++ \
+        -D CMAKE_BUILD_TYPE=Release \
+    && make"
 
-# Compile.
-RUN mkdir -p ./build/Release
-WORKDIR /usr/src/monster-mash/build/Release
-RUN cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/emsdk/upstream/emscripten/emcc -DCMAKE_CXX_COMPILER=/emsdk/upstream/emscripten/em++ ../../src && make
+WORKDIR /app/src/build/Release
 
-CMD ["/bin/bash"]
+RUN mkdir includes \
+    && cd includes \
+    && cp ../../../ui/* . \
+    && cp ../../../../third_party/FileSaver/FileSaver.js . \
+    && cp ../../../../third_party/emscripten-ui/module.js .
+
+EXPOSE 8000
+
+ENTRYPOINT ["python3"]
+CMD ["-m", "http.server", "8000"]
