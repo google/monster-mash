@@ -20,12 +20,14 @@ COPY data /app/data
 COPY src /app/src
 WORKDIR /app/src
 RUN /bin/bash -c "source "/opt/emsdk/emsdk_env.sh" \
-    && mkdir -p build/Release && cd build/Release \
-    && cmake ../../. \
-        -D CMAKE_C_COMPILER=emcc \
-        -D CMAKE_CXX_COMPILER=em++ \
-        -D CMAKE_BUILD_TYPE=Release \
-    && make"
+        && mkdir -p build/Release && cd build/Release \
+        && cmake ../../. \
+            -D CMAKE_C_COMPILER=emcc \
+            -D CMAKE_CXX_COMPILER=em++ \
+            -D CMAKE_BUILD_TYPE=Release \
+        && make" \
+    && mv /app/src/build/Release/monstermash.html \
+        /app/src/build/Release/index.html
 
 WORKDIR /app/src/build/Release
 
