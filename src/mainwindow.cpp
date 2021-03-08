@@ -92,6 +92,11 @@ bool MainWindow::paintEvent() {
     if (!backgroundImg.isNull() && shadingOpts.showBackgroundImg)
       painter.drawTexture(glData.backgroundImgTexName);
 
+    // animation
+    if (manipulationMode.mode == ANIMATE_MODE) {
+      cpAnimationPlaybackAndRecord();
+    }
+
     // draw 3D model
     computeNormals(shadingOpts.useNormalSmoothing);
     drawGeometryMode(painter, painterOther);
@@ -107,10 +112,8 @@ bool MainWindow::paintEvent() {
       repaint = false;
     }
 
-    if (manipulationMode.mode == ANIMATE_MODE) {
-      // animation
-      cpAnimationPlaybackAndRecord();
-    }
+    // export animation frame
+    if (exportAnimationRunning()) exportAnimationFrame();
 
     if (showMessages) drawMessages(painter);
   }
@@ -694,8 +697,15 @@ void MainWindow::keyPressEvent(const MyKeyEvent &keyEvent) {
   }
   if (keyEvent.key == SDLK_w) {
     //    exportAsOBJ("/tmp", "mm_frame", true);
-    writeOBJ("/tmp/mm_frame.obj", defData.VCurr, defData.Faces, defData.normals,
-             defData.Faces, MatrixXd(), defData.Faces);
+
+    //    writeOBJ("/tmp/mm_frame.obj", defData.VCurr, defData.Faces,
+    //    defData.normals,
+    //             defData.Faces, MatrixXd(), defData.Faces);
+
+    if (!exportAnimationRunning())
+      exportAnimationStart();
+    else
+      exportAnimationStop();
   }
 #endif
 
@@ -2410,3 +2420,98 @@ void MainWindow::exportAsOBJ(const std::string &outDir,
     templateImg.savePNG(outDir + "/" + outFnWithoutExtension + ".png");
   }
 }
+
+void MainWindow::exportAnimationStart() {
+  manualTimepoint = true;
+  //  cpData.playAnimation = true;
+  if (cpAnimSync.getLength() == 0) return;
+  //  cpAnimSync.lastT = 0;
+
+  gltfModel = new tinygltf::Model;
+  exportAnimationWaitForBeginning = true;
+  exportedFrames = 0;
+
+  cerr << "exportAnimationStart" << endl;
+}
+
+void MainWindow::exportAnimationStop() {
+  manualTimepoint = false;
+  //  cpData.playAnimation = true;
+
+  if (gltfModel != nullptr) {
+    exportgltf::exportStop(*gltfModel, "/tmp/mm_project.gltf");
+    delete gltfModel;
+    gltfModel = nullptr;
+#ifdef __EMSCRIPTEN__
+    EM_ASM(js_exportAnimationFinished(););
+#endif
+  }
+
+  cerr << "exportAnimationStop" << endl;
+}
+
+void MainWindow::exportAnimationFrame() {
+  bool saveTexture = true;
+
+  if (gltfModel == nullptr) {
+    DEBUG_CMD_MM(cerr << "exportAnimationFrame: gltfModel == nullptr" << endl;);
+    return;
+  }
+
+  if (exportAnimationWaitForBeginning) {
+    if (static_cast<int>(cpAnimSync.lastT) % cpAnimSync.getLength() == 0)
+      exportAnimationWaitForBeginning = false;
+    else {
+      DEBUG_CMD_MM(cout << "exportAnimationFrame: waiting for beginning"
+                        << endl;);
+      cout << static_cast<int>(cpAnimSync.lastT) % cpAnimSync.getLength()
+           << endl;
+    }
+  } else {
+    if (static_cast<int>(cpAnimSync.lastT) % cpAnimSync.getLength() == 0) {
+      // reached the end of animation
+      exportAnimationStop();
+      return;
+    }
+  }
+
+  if (!exportAnimationWaitForBeginning) {
+    exportgltf::MatrixXfR V = defData.VCurr.cast<float>();
+    V *= 10.0 / viewportW;
+    V.array().rowwise() *= RowVector3f(1, -1, -1).array();
+    V.rowwise() += RowVector3f(-5, 5, 0);
+
+    //    exportgltf::exportFrame()
+
+    const int nFrames = cpAnimSync.getLength();
+
+    if (exportedFrames == 0) {
+      exportBaseV = V;
+      exportgltf::MatrixXusR F = defData.Faces.cast<unsigned short>();
+      exportgltf::MatrixXfR N = defData.normals.cast<float>();
+      N.array().rowwise() *= RowVector3f(1, -1, -1).array();
+
+#if 0
+      MatrixXd textureCoords;
+      if (!templateImg.isNull() && saveTexture) {
+        //        textureCoords = defData.VRestOrig.array();
+        textureCoords = (defData.VRestOrig.array().rowwise() /
+                         Array3d(templateImg.w, templateImg.h, 1).transpose());
+        cout << textureCoords << endl;
+      }
+#endif
+
+      exportgltf::exportFullModel(V, N, F, exportedFrames, nFrames, 24,
+                                  *gltfModel);
+    } else {
+      exportgltf::exportMorphTarget(V - exportBaseV, exportedFrames, nFrames,
+                                    *gltfModel);
+    }
+    exportedFrames++;
+  }
+
+  cpAnimSync.lastT++;
+  if (cpAnimSync.lastT >= 100 * cpAnimSync.getLength()) cpAnimSync.lastT = 0;
+}
+
+bool MainWindow::exportAnimationRunning() { return gltfModel != nullptr; }

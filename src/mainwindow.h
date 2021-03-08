@@ -16,6 +16,7 @@
 #define MAINWINDOW_H
 
 #include "commonStructs.h"
+#include "exportgltf.h"
 #include "mywindow.h"
 
 class MainWindow : public MyWindow {
@@ -66,6 +67,10 @@ class MainWindow : public MyWindow {
   void offsetSelectedCpAnimsByFrames(double offset);
   void offsetSelectedCpAnimsByPercentage(double offset);
   void setAnimRecMode(AnimMode animMode);
+  void exportAnimationStart();
+  void exportAnimationStop();
+  void exportAnimationFrame();
+  bool exportAnimationRunning();
 
  protected:
   bool paintEvent();
@@ -296,6 +301,10 @@ class MainWindow : public MyWindow {
   int autoSmoothAnimFrom = -5, autoSmoothAnimTo = 5, autoSmoothAnimIts = 5;
   CPAnim copiedAnim;
   CPAnim &cpAnimSync = cpData.cpAnimSync;
+  tinygltf::Model *gltfModel = nullptr;
+  bool exportAnimationWaitForBeginning = true;
+  int exportedFrames = 0;
+  exportgltf::MatrixXfR exportBaseV;
 };
 
 #endif  // MAINWINDOW_H

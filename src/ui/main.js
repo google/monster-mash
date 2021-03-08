@@ -103,6 +103,11 @@ function js_frameExportedToOBJ() {
     }, 2*timeout);
   }
 }
+function js_exportAnimationFinished() {
+  const content = FS.readFile("/tmp/mm_project.gltf");
+  var blob = new Blob([content], { type: "application/octet-stream" });
+  saveAs(blob, "mm_project.gltf");
+}
 function js_recordingModeStopped() {
   $('.buttonRecord').removeClass('active');
 }
@@ -169,6 +174,7 @@ function showGeometryModeControls() {
   $('.buttonsViewOptions button').removeClass('disabled');
   $('.buttonsViewOptions button').prop('disabled', false);
   $('#buttonExportAsOBJ').removeClass('disabled');
+  $('#buttonExportAnimation').removeClass('disabled');
 }
 function hideGeometryModeControls() {
   $('.buttonsViewOptions div label').removeClass('disabled');
@@ -179,6 +185,8 @@ function hideGeometryModeControls() {
   $('.buttonsViewOptions button').prop('disabled', true);
   $('#buttonExportAsOBJ').removeClass('disabled');
   $('#buttonExportAsOBJ').addClass('disabled');
+  $('#buttonExportAnimation').removeClass('disabled');
+  $('#buttonExportAnimation').addClass('disabled');
 }
 
 $('.dropdownImageMode').click(function(e) {
@@ -356,6 +364,9 @@ $('#buttonPasteAnimation').click(function() {
 });
 $('#buttonExportAsOBJ').click(function() {
   Module._exportAsOBJ();
+});
+$('#buttonExportAnimation').click(function() {
+  Module._exportAnimation();
 });
 
 // initialize tooltips

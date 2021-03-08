@@ -207,6 +207,14 @@ EMSCRIPTEN_KEEPALIVE void exportAsOBJ() {
   mainWindow.exportAsOBJ("/tmp", "mm_frame", true);
   EM_ASM(js_frameExportedToOBJ(););
 }
+
+EMSCRIPTEN_KEEPALIVE void exportAnimation() {
+  if (!mainWindow.exportAnimationRunning()) {
+    mainWindow.exportAnimationStart();
+  } else {
+    mainWindow.exportAnimationStop();
+  }
+}
 }
 #endif
 
