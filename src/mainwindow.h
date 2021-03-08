@@ -196,7 +196,6 @@ class MainWindow : public MyWindow {
   int &selectedLayer = imgData.selectedLayer;
   std::set<int> &selectedLayers = imgData.selectedLayers;
   Imguc templateImg, backgroundImg;
-  Imguc textureImg, backTextureImg;
 
   // deformation
   DefData defData;

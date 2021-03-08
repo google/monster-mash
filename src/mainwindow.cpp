@@ -712,7 +712,6 @@ void MainWindow::keyPressEvent(const MyKeyEvent &keyEvent) {
       exportAnimationStop();
   }
 #endif
-
   if (keyEvent.ctrlModifier) {
     if (keyEvent.key == SDLK_c) {
       // CTRL+C
@@ -1585,7 +1584,6 @@ void MainWindow::reset() {
   selectedLayers.clear();
   templateImg.setNull();
   backgroundImg.setNull();
-  textureImg.setNull();
   showModel = false;
 
   // reset reconstruction data
@@ -2456,6 +2454,8 @@ void MainWindow::exportAnimationStart(int preroll, bool solveForZ) {
   exportAnimationPreroll = preroll;
   exportedFrames = 0;
 
+  exportgltf::exportStart(*gltfModel, templateImg);
+
   repaint = true;
 
   DEBUG_CMD_MM(cout << "exportAnimationStart" << endl;);
@@ -2484,8 +2484,6 @@ void MainWindow::exportAnimationStop(bool exportModel) {
 }
 
 void MainWindow::exportAnimationFrame() {
-  bool saveTexture = true;
-
   if (gltfModel == nullptr) {
     DEBUG_CMD_MM(cerr << "exportAnimationFrame: gltfModel == nullptr" << endl;);
     return;
@@ -2519,6 +2517,7 @@ void MainWindow::exportAnimationFrame() {
     V.rowwise() += RowVector3f(-5, 5, 0);
 
     const int nFrames = cpAnimSync.getLength();
+    const bool hasTexture = !templateImg.isNull();
 
     if (exportedFrames == 0) {
       exportBaseV = V;
@@ -2526,21 +2525,16 @@ void MainWindow::exportAnimationFrame() {
       exportgltf::MatrixXfR N = defData.normals.cast<float>();
       N.array().rowwise() *= RowVector3f(1, -1, -1).array();
 
-#if 0
-      MatrixXd textureCoords;
-      if (!templateImg.isNull() && saveTexture) {
-        //        textureCoords = defData.VRestOrig.array();
-        textureCoords = (defData.VRestOrig.array().rowwise() /
-                         Array3d(templateImg.w, templateImg.h, 1).transpose());
-        cout << textureCoords << endl;
+      exportgltf::MatrixXfR TC;
+      if (hasTexture) {
+        TC = (defData.VRestOrig.leftCols(2).cast<float>().array().rowwise() /
+              Array2f(templateImg.w, templateImg.h).transpose());
       }
-#endif
 
-      exportgltf::exportFullModel(V, N, F, exportedFrames, nFrames, 24,
-                                  *gltfModel);
+      exportgltf::exportFullModel(V, N, F, TC, nFrames, 24, *gltfModel);
     } else {
       exportgltf::exportMorphTarget(V - exportBaseV, exportedFrames, nFrames,
-                                    *gltfModel);
+                                    hasTexture, *gltfModel);
     }
     exportedFrames++;
   }
