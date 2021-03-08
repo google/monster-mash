@@ -145,7 +145,14 @@ function resetToModuleState() {
 }
 
 // event listener
-$(window).keyup(function(e) {
+$(window).keydown(function(e) {
+  if ($('#modalDialogQuickTutorial').is(':visible') ||
+      $('#modalDialogSettings').is(':visible') ||
+      $('#modalDialogExportAnimation').is(':visible')) {
+    // skip for modal dialogs
+    return;
+  }
+  
   e.preventDefault();
   if (e.which === 49 || e.which === 97) $('#dropdownImageModeDraw').click();
   if (e.which === 52 || e.which === 100) $('#dropdownImageModeRedraw').click();
@@ -157,6 +164,13 @@ $(window).keyup(function(e) {
   if (e.which === 72) $('#buttonShowControlPins').click();
   if (e.ctrlKey && e.which === 79) $('#buttonOpenProject').click();
   if (e.ctrlKey && e.which === 83) $('#buttonSaveProject').click();
+  if (e.ctrlKey && e.which === 67) Module._copySelectedAnim();
+  if (e.ctrlKey && e.which === 86) Module._pasteSelectedAnim();
+  if (e.ctrlKey && e.which === 65) Module._selectAll();
+  if (e.which === 27) Module._deselectAll();
+  if (e.which === 107 || e.which === 187 || (e.shiftKey && e.which === 187)) Module._offsetSelectedCpAnimsByFrames(1);
+  if (e.which === 109 || e.which === 189) Module._offsetSelectedCpAnimsByFrames(-1);
+  if (e.which === 46 || e.which === 8) Module._removeControlPointOrRegion();
 });
 
 function showRecordButton() {
@@ -176,11 +190,14 @@ function showAnimationModeControls() {
   } else {
     showRecordButton();
   }
+  $('#buttonExportAnimation').removeClass('disabled');
 }
 function hideAnimationModeControls() {
   $('.animationButtons label').removeClass('disabled');
   $('.animationButtons label').addClass('disabled');
   $('.animationButtons label div input').prop('disabled', true);
+  $('#buttonExportAnimation').removeClass('disabled');
+  $('#buttonExportAnimation').addClass('disabled');
 }
 function showGeometryModeControls() {
   $('.buttonsViewOptions div label').removeClass('disabled');
@@ -188,7 +205,6 @@ function showGeometryModeControls() {
   $('.buttonsViewOptions button').removeClass('disabled');
   $('.buttonsViewOptions button').prop('disabled', false);
   $('#buttonExportAsOBJ').removeClass('disabled');
-  $('#buttonExportAnimation').removeClass('disabled');
 }
 function hideGeometryModeControls() {
   $('.buttonsViewOptions div label').removeClass('disabled');
@@ -199,8 +215,6 @@ function hideGeometryModeControls() {
   $('.buttonsViewOptions button').prop('disabled', true);
   $('#buttonExportAsOBJ').removeClass('disabled');
   $('#buttonExportAsOBJ').addClass('disabled');
-  $('#buttonExportAnimation').removeClass('disabled');
-  $('#buttonExportAnimation').addClass('disabled');
 }
 
 $('.dropdownImageMode').click(function(e) {

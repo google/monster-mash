@@ -711,7 +711,6 @@ void MainWindow::keyPressEvent(const MyKeyEvent &keyEvent) {
     else
       exportAnimationStop();
   }
-#endif
   if (keyEvent.ctrlModifier) {
     if (keyEvent.key == SDLK_c) {
       // CTRL+C
@@ -739,6 +738,7 @@ void MainWindow::keyPressEvent(const MyKeyEvent &keyEvent) {
   if (keyEvent.key == SDLK_DELETE || keyEvent.key == SDLK_BACKSPACE) {
     removeControlPointOrRegion();
   }
+#endif
 }
 
 int MainWindow::selectLayerUnderCoords(int x, int y, bool nearest) {

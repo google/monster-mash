@@ -37,6 +37,10 @@ EMSCRIPTEN_KEEPALIVE void pasteSelectedAnim() {
   mainWindow.pasteSelectedAnim();
 }
 
+EMSCRIPTEN_KEEPALIVE void offsetSelectedCpAnimsByFrames(double offset) {
+  mainWindow.offsetSelectedCpAnimsByFrames(offset);
+}
+
 EMSCRIPTEN_KEEPALIVE void loadBackgroundImage() {
   mainWindow.loadBackgroundImageFromFile();
 }

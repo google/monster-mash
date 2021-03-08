@@ -36,6 +36,13 @@ int MyWindow::init(const std::string& windowTitle) {
     return 1;
   }
 
+#ifdef __EMSCRIPTEN__
+  // prevent taking events
+  SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
+  SDL_EventState(SDL_KEYDOWN, SDL_DISABLE);
+  SDL_EventState(SDL_KEYUP, SDL_DISABLE);
+#endif
+
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
