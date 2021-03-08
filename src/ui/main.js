@@ -103,7 +103,21 @@ function js_frameExportedToOBJ() {
     }, 2*timeout);
   }
 }
+function js_exportAnimationProgress(progress) {
+  var progressEl = $('#exportAnimationProgress');
+  progressEl.text(progress + "%");
+  progressEl.css("width", progress + "%");
+}
 function js_exportAnimationFinished() {
+  var exportBtnEl = $('#exportAnimationButtonExport');
+  var abortBtnEl = $('#exportAnimationButtonCancel');
+  var progressEl = $('#exportAnimationProgress');
+  exportBtnEl.removeClass('disabled');
+  exportBtnEl.prop('disabled', false);
+  abortBtnEl.addClass('disabled');
+  abortBtnEl.prop('disabled', true);
+  progressEl.addClass('bg-success');
+
   const content = FS.readFile("/tmp/mm_project.gltf");
   var blob = new Blob([content], { type: "application/octet-stream" });
   saveAs(blob, "mm_project.gltf");
@@ -366,7 +380,52 @@ $('#buttonExportAsOBJ').click(function() {
   Module._exportAsOBJ();
 });
 $('#buttonExportAnimation').click(function() {
-  Module._exportAnimation();
+  var prerollFramesEl = $('#exportAnimationPrerollFrames');
+  var progressEl = $('#exportAnimationProgress');
+  prerollFramesEl.attr({'min': '0', 'max': '1000'});
+  progressEl.text("");
+  progressEl.css("width", "0%");
+  progressEl.removeClass('bg-success');
+  Module._pauseAnimation();
+  $('#modalDialogExportAnimation').modal();
+});
+$('#exportAnimationButtonExport').click(function() {
+  var prerollFramesEl = $('#exportAnimationPrerollFrames');
+  var progressEl = $('#exportAnimationProgress');
+  var preview = $('#exportAnimationButtonPreview').prop("checked");
+  var exportBtnEl = $('#exportAnimationButtonExport');
+  var abortBtnEl = $('#exportAnimationButtonCancel');
+  exportBtnEl.addClass('disabled');
+  exportBtnEl.prop('disabled', true);
+  abortBtnEl.removeClass('disabled');
+  abortBtnEl.prop('disabled', false);
+  progressEl.text("");
+  progressEl.css("width", "0%");
+  progressEl.removeClass('bg-success');
+  Module._exportAnimationStart(prerollFramesEl.val(), !preview);
+});
+$('#exportAnimationButtonCancel').click(function() {
+  var exportBtnEl = $('#exportAnimationButtonExport');
+  var abortBtnEl = $('#exportAnimationButtonCancel');
+  var progressEl = $('#exportAnimationProgress');
+  exportBtnEl.removeClass('disabled');
+  exportBtnEl.prop('disabled', false);
+  abortBtnEl.addClass('disabled');
+  abortBtnEl.prop('disabled', true);
+  progressEl.text("");
+  progressEl.css("width", "0%");
+  Module._exportAnimationAbort();
+});
+$('#modalDialogExportAnimation').on('hide.bs.modal', function() {
+  var ret = true;
+  if (Module._exportAnimationRunning()) {
+    ret = confirm('Are you sure you want cancel the export?');
+    if (ret) $('#exportAnimationButtonCancel').click();
+  }
+  if (ret) {
+    Module._resumeAnimation();
+  }
+  return ret;
 });
 
 // initialize tooltips
@@ -400,3 +459,4 @@ $(window).on('mainContentVisible', function() {
     $('[data-tooltip="tooltip"]').tooltip('hide');
   });
 });
+

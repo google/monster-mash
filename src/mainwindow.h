@@ -67,10 +67,12 @@ class MainWindow : public MyWindow {
   void offsetSelectedCpAnimsByFrames(double offset);
   void offsetSelectedCpAnimsByPercentage(double offset);
   void setAnimRecMode(AnimMode animMode);
-  void exportAnimationStart();
-  void exportAnimationStop();
+  void exportAnimationStart(int preroll, bool solveForZ);
+  void exportAnimationStop(bool exportModel = true);
   void exportAnimationFrame();
   bool exportAnimationRunning();
+  void pauseAnimation();
+  void resumeAnimation();
 
  protected:
   bool paintEvent();
@@ -127,6 +129,9 @@ class MainWindow : public MyWindow {
   void deselectAllControlPoints();
   void selectAllControlPoints();
   void selectAllRegions();
+
+  void pauseAll(PauseStatus &status);
+  void resumeAll(PauseStatus &status);
 
   // animation
   void setRecordingCP(bool active);
@@ -203,7 +208,7 @@ class MainWindow : public MyWindow {
   int &defEngMaxIter = defData.defEngMaxIter;
   double &rigidity = defData.rigidity;
   std::chrono::high_resolution_clock::time_point arapTimerLast;
-  PauseStatus deformationsStatus;
+  bool defPaused = false;
 
   // reconstruction
   RecData recData;
@@ -302,9 +307,11 @@ class MainWindow : public MyWindow {
   CPAnim copiedAnim;
   CPAnim &cpAnimSync = cpData.cpAnimSync;
   tinygltf::Model *gltfModel = nullptr;
+  int exportAnimationPreroll = 0;
   bool exportAnimationWaitForBeginning = true;
   int exportedFrames = 0;
   exportgltf::MatrixXfR exportBaseV;
+  PauseStatus animStatus;
 };
 
 #endif  // MAINWINDOW_H

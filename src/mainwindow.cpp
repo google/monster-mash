@@ -102,17 +102,21 @@ bool MainWindow::paintEvent() {
     drawGeometryMode(painter, painterOther);
 
     // deformation
-    double defDiff = handleDeformations();
-    //    DEBUG_CMD_MM(cout << defDiff << endl;);
-    if (defDiff < 0.01 &&
-        !(manipulationMode.mode == ANIMATE_MODE && isAnimationPlaying() &&
-          !cpData.cpsAnim
-               .empty())  // always repaint if there's animation playing
-    ) {
+    if (!defPaused) {
+      double defDiff = handleDeformations();
+      //    DEBUG_CMD_MM(cout << defDiff << endl;);
+      if (defDiff < 0.01 &&
+          !(manipulationMode.mode == ANIMATE_MODE && isAnimationPlaying() &&
+            !cpData.cpsAnim
+                 .empty())  // always repaint if there's animation playing
+      ) {
+        repaint = false;
+      }
+    } else
       repaint = false;
-    }
 
     // export animation frame
+    //    cout << exportAnimationRunning() << endl;
     if (exportAnimationRunning()) exportAnimationFrame();
 
     if (showMessages) drawMessages(painter);
@@ -703,7 +707,7 @@ void MainWindow::keyPressEvent(const MyKeyEvent &keyEvent) {
     //             defData.Faces, MatrixXd(), defData.Faces);
 
     if (!exportAnimationRunning())
-      exportAnimationStart();
+      exportAnimationStart(0, false);
     else
       exportAnimationStop();
   }
@@ -2115,7 +2119,7 @@ void MainWindow::cpAnimationPlaybackAndRecord() {
     }
 
     // playback
-    if (playAnimation && !cpsAnim.empty()) {
+    if (playAnimation && !manualTimepoint && !cpsAnim.empty()) {
       defEng.solveForZ = false;  // pause z-deformation
     }
     if (playAnimation || recordCP) {
@@ -2376,6 +2380,21 @@ void MainWindow::resetView() {
   repaint = true;
 }
 
+void MainWindow::pauseAll(PauseStatus &status) {
+  if (manipulationMode.mode != ANIMATE_MODE) return;
+  status.animPaused = !cpData.playAnimation;
+  cpData.playAnimation = false;
+  defPaused = true;
+  repaint = true;
+}
+
+void MainWindow::resumeAll(PauseStatus &status) {
+  if (manipulationMode.mode != ANIMATE_MODE) return;
+  cpData.playAnimation = !status.animPaused;
+  defPaused = false;
+  repaint = true;
+}
+
 void MainWindow::exportAsOBJ(const std::string &outDir,
                              const std::string &outFnWithoutExtension,
                              bool saveTexture) {
@@ -2421,33 +2440,47 @@ void MainWindow::exportAsOBJ(const std::string &outDir,
   }
 }
 
-void MainWindow::exportAnimationStart() {
+void MainWindow::exportAnimationStart(int preroll, bool solveForZ) {
+  const int nFrames = cpAnimSync.getLength();
   manualTimepoint = true;
-  //  cpData.playAnimation = true;
-  if (cpAnimSync.getLength() == 0) return;
-  //  cpAnimSync.lastT = 0;
+  if (nFrames > 0) {
+    cpAnimSync.lastT = (100 * nFrames - preroll) % nFrames;
+  }
+  cpData.playAnimation = true;
+  defEng.solveForZ = solveForZ;  // resume z-deformation
+  defPaused = false;
 
+  if (gltfModel != nullptr) delete gltfModel;
   gltfModel = new tinygltf::Model;
   exportAnimationWaitForBeginning = true;
+  exportAnimationPreroll = preroll;
   exportedFrames = 0;
 
-  cerr << "exportAnimationStart" << endl;
+  repaint = true;
+
+  DEBUG_CMD_MM(cout << "exportAnimationStart" << endl;);
 }
 
-void MainWindow::exportAnimationStop() {
+void MainWindow::exportAnimationStop(bool exportModel) {
   manualTimepoint = false;
-  //  cpData.playAnimation = true;
+  defEng.solveForZ = false;  // pause z-deformation
+  cpData.playAnimation = false;
+  defPaused = true;
 
   if (gltfModel != nullptr) {
-    exportgltf::exportStop(*gltfModel, "/tmp/mm_project.gltf");
+    if (exportModel) {
+      exportgltf::exportStop(*gltfModel, "/tmp/mm_project.gltf");
+#ifdef __EMSCRIPTEN__
+      EM_ASM(js_exportAnimationFinished(););
+#endif
+    }
     delete gltfModel;
     gltfModel = nullptr;
-#ifdef __EMSCRIPTEN__
-    EM_ASM(js_exportAnimationFinished(););
-#endif
   }
 
-  cerr << "exportAnimationStop" << endl;
+  repaint = true;
+
+  DEBUG_CMD_MM(cout << "exportAnimationStop" << endl;);
 }
 
 void MainWindow::exportAnimationFrame() {
@@ -2458,30 +2491,32 @@ void MainWindow::exportAnimationFrame() {
     return;
   }
 
-  if (exportAnimationWaitForBeginning) {
-    if (static_cast<int>(cpAnimSync.lastT) % cpAnimSync.getLength() == 0)
-      exportAnimationWaitForBeginning = false;
-    else {
-      DEBUG_CMD_MM(cout << "exportAnimationFrame: waiting for beginning"
-                        << endl;);
-      cout << static_cast<int>(cpAnimSync.lastT) % cpAnimSync.getLength()
-           << endl;
+  const int nFrames = cpAnimSync.getLength();
+  bool exportSingleFrame = nFrames == 0;
+
+  int prerollCurr = 0;
+  if (!exportSingleFrame) {
+    const int prerollStart = (100 * nFrames - exportAnimationPreroll) % nFrames;
+    prerollCurr = static_cast<int>(cpAnimSync.lastT) - prerollStart;
+    if (exportAnimationWaitForBeginning) {
+      if (prerollCurr >= exportAnimationPreroll) {
+        exportAnimationWaitForBeginning = false;
+      } else {
+        DEBUG_CMD_MM(cout << "exportAnimationFrame: waiting for beginning ("
+                          << cpAnimSync.lastT << ")" << endl;);
+      }
     }
   } else {
-    if (static_cast<int>(cpAnimSync.lastT) % cpAnimSync.getLength() == 0) {
-      // reached the end of animation
-      exportAnimationStop();
-      return;
-    }
+    exportAnimationWaitForBeginning = false;
   }
 
   if (!exportAnimationWaitForBeginning) {
+    prerollCurr = exportAnimationPreroll;
+    DEBUG_CMD_MM(cout << "exportAnimationFrame: " << exportedFrames << endl;);
     exportgltf::MatrixXfR V = defData.VCurr.cast<float>();
     V *= 10.0 / viewportW;
     V.array().rowwise() *= RowVector3f(1, -1, -1).array();
     V.rowwise() += RowVector3f(-5, 5, 0);
-
-    //    exportgltf::exportFrame()
 
     const int nFrames = cpAnimSync.getLength();
 
@@ -2510,8 +2545,32 @@ void MainWindow::exportAnimationFrame() {
     exportedFrames++;
   }
 
+  // update progress bar
+  int progress = 100;
+  if (!exportSingleFrame) {
+    progress = round(100.0 * (prerollCurr + exportedFrames) /
+                     (nFrames + exportAnimationPreroll));
+  }
+#ifdef __EMSCRIPTEN__
+  EM_ASM({ js_exportAnimationProgress($0); }, progress);
+#endif
+
   cpAnimSync.lastT++;
-  if (cpAnimSync.lastT >= 100 * cpAnimSync.getLength()) cpAnimSync.lastT = 0;
+  if (cpAnimSync.lastT >= 100 * nFrames) cpAnimSync.lastT = 0;
+
+  if (!exportAnimationWaitForBeginning) {
+    if (exportSingleFrame ||
+        (nFrames > 0 && (static_cast<int>(cpAnimSync.lastT) % nFrames == 0))) {
+      // reached the end of animation
+      exportAnimationStop();
+      return;
+    }
+  }
+
+  repaint = true;
 }
 
 bool MainWindow::exportAnimationRunning() { return gltfModel != nullptr; }
+
+void MainWindow::pauseAnimation() { pauseAll(animStatus); }
+void MainWindow::resumeAnimation() { resumeAll(animStatus); }

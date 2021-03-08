@@ -412,6 +412,56 @@ The current animation frame can be exported to the <a href="https://en.wikipedia
         </div>
       </div>
     </div>
+    <!-- Modal dialog: Export animation -->
+    <div class="modal fade" id="modalDialogExportAnimation" tabindex="-1" aria-labelledby="modalDialogExportAnimationLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title" id="modalDialogExportAnimationLabel">Export to glTF</h3>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p class="p-2"><small><strong>Warning:</strong> The export first generates the file in the memory which may cause Monster Mash to crash when the animation is too large. Therefore, make sure to save the project before exporting.</small></p>
+            <div class="row p-2">
+              <div class="col-5">
+                Pre-roll:
+              </div>
+              <div class="col-7">
+                <input type="number" autocomplete="off" min="0" max="0" value="0" id="exportAnimationPrerollFrames">
+              </div>
+            </div>
+            <div class="row p-2">
+              <div class="col-5">
+                Preview mode:
+              </div>
+              <div class="col-7">
+                <label>
+                  <input type="checkbox" autocomplete="off" id="exportAnimationButtonPreview" aria-checked="false"> Enable
+                </label>
+              </div>
+            </div>
+            <div class="row p-2 text-center">
+              <div class="col-12">
+                <div class="progress">
+                  <div id="exportAnimationProgress" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </div>
+            </div>
+            <div class="row p-2 text-center">
+              <div class="col-12">
+                <button type="button" id="exportAnimationButtonExport" class="btn">Export</button>
+                <button type="button" id="exportAnimationButtonCancel" class="btn disabled" disabled>Cancel</button>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>    
 
     <div id="loadingLogo" class="emscripten">
       <img src="imgs/loading.jpg" width="806" height="298" />

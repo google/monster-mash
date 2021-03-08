@@ -23,13 +23,13 @@
 
 class CPAnim {
  public:
-  typedef struct {
+  struct Keypose {
     Eigen::Vector3d p;
     int timestamp;
     bool empty = true;
     bool display = false;
     bool have_timestamp = true;
-  } Keypose;
+  };
 
   CPAnim();
   CPAnim(unsigned int length, const Eigen::Vector3d &p);

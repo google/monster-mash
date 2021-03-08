@@ -309,3 +309,11 @@ span.keyBox.keyRectBig {
   padding-right: 20px;
   vertical-align: top;
 }
+
+.progress #exportAnimationProgress {
+    -webkit-transition: none;
+    -moz-transition: none;
+    -ms-transition: none;
+    -o-transition: none;
+    transition: none;
+}​

@@ -208,13 +208,27 @@ EMSCRIPTEN_KEEPALIVE void exportAsOBJ() {
   EM_ASM(js_frameExportedToOBJ(););
 }
 
-EMSCRIPTEN_KEEPALIVE void exportAnimation() {
+EMSCRIPTEN_KEEPALIVE void exportAnimationStart(int preroll, bool solveForZ) {
   if (!mainWindow.exportAnimationRunning()) {
-    mainWindow.exportAnimationStart();
+    mainWindow.exportAnimationStart(preroll, solveForZ);
   } else {
     mainWindow.exportAnimationStop();
   }
 }
+
+EMSCRIPTEN_KEEPALIVE void exportAnimationAbort() {
+  if (mainWindow.exportAnimationRunning()) {
+    mainWindow.exportAnimationStop(false);
+  }
+}
+
+EMSCRIPTEN_KEEPALIVE bool exportAnimationRunning() {
+  return mainWindow.exportAnimationRunning();
+}
+
+EMSCRIPTEN_KEEPALIVE void pauseAnimation() { mainWindow.pauseAnimation(); }
+
+EMSCRIPTEN_KEEPALIVE void resumeAnimation() { mainWindow.resumeAnimation(); }
 }
 #endif
 
