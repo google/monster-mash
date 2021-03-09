@@ -233,6 +233,10 @@ EMSCRIPTEN_KEEPALIVE bool exportAnimationRunning() {
 EMSCRIPTEN_KEEPALIVE void pauseAnimation() { mainWindow.pauseAnimation(); }
 
 EMSCRIPTEN_KEEPALIVE void resumeAnimation() { mainWindow.resumeAnimation(); }
+
+EMSCRIPTEN_KEEPALIVE int getNumberOfAnimationFrames() {
+  return mainWindow.getNumberOfAnimationFrames();
+}
 }
 #endif
 

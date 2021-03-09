@@ -424,25 +424,35 @@ The current animation frame can be exported to the <a href="https://en.wikipedia
           </div>
           <div class="modal-body">
             <p class="p-2"><small><strong>Warning:</strong> The export first generates the file in the memory which may cause Monster Mash to crash when the animation is too large. Therefore, make sure to save the project before exporting.</small></p>
-            <div class="row p-2">
-              <div class="col-5">
+            <div class="row px-2 pt-2">
+              <div class="col-3">
                 Pre-roll:
               </div>
-              <div class="col-7">
-                <input type="number" autocomplete="off" min="0" max="0" value="0" id="exportAnimationPrerollFrames">
+              <div class="col-9">
+                <input type="number" autocomplete="off" min="0" max="0" value="0" id="exportAnimationPrerollFrames"> <span class="text-muted">(Animation length: <span id="exportAnimationNumFrames"></span>)</span>
               </div>
             </div>
-            <div class="row p-2">
-              <div class="col-5">
-                Preview mode:
+            <div class="row px-2">
+              <div class="col-12">
+                <small class="form-text text-muted">Number of frames to precompute before exporting the sequence.</small>
               </div>
-              <div class="col-7">
+            </div>
+            <div class="row px-2 pt-2">
+              <div class="col-3">
+                Full quality:
+              </div>
+              <div class="col-9">
                 <label>
-                  <input type="checkbox" autocomplete="off" id="exportAnimationButtonPreview" aria-checked="false"> Enable
+                  <input type="checkbox" autocomplete="off" id="exportAnimationButtonFull" aria-checked="true" checked> Enable
                 </label>
               </div>
             </div>
-            <div class="row p-2 text-center">
+            <div class="row px-2">
+              <div class="col-12">
+                <small class="form-text text-muted">Check this box to resolve the depth during the export. Uncheck for faster exports, which may, however, include interpenetrations.</small>
+              </div>
+            </div>
+            <div class="row px-2 py-4 text-center">
               <div class="col-12">
                 <div class="progress">
                   <div id="exportAnimationProgress" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -511,7 +521,7 @@ The current animation frame can be exported to the <a href="https://en.wikipedia
                 <a class="dropdown-item" href="#" id="buttonExportTextureTemplate">Export a template for texturing&hellip;</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item disabled" href="#" id="buttonExportAsOBJ">Export the current animation frame as .obj file&hellip;</a>
-                <a class="dropdown-item disabled" href="#" id="buttonExportAnimation">Export project as glTF file (includes animation)&hellip;</a>
+                <a class="dropdown-item disabled" href="#" id="buttonExportAnimation">Export animation as glTF (.glb file)&hellip;</a>
               </div>
             </div>
 

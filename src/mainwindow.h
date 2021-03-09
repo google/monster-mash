@@ -73,6 +73,7 @@ class MainWindow : public MyWindow {
   bool exportAnimationRunning();
   void pauseAnimation();
   void resumeAnimation();
+  int getNumberOfAnimationFrames();
 
  protected:
   bool paintEvent();

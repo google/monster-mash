@@ -16,7 +16,7 @@ typedef Eigen::Matrix<unsigned short, Eigen::Dynamic, Eigen::Dynamic,
     MatrixXusR;
 
 void exportStart(tinygltf::Model &m, const Imguc &textureImg);
-void exportStop(tinygltf::Model &m, const std::string &outFn);
+void exportStop(tinygltf::Model &m, const std::string &outFn, bool writeBinary);
 void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
                      const MatrixXusR &F, const MatrixXfR &TC,
                      const int nFrames, const int FPS, tinygltf::Model &m);

@@ -2469,7 +2469,7 @@ void MainWindow::exportAnimationStop(bool exportModel) {
 
   if (gltfModel != nullptr) {
     if (exportModel) {
-      exportgltf::exportStop(*gltfModel, "/tmp/mm_project.gltf");
+      exportgltf::exportStop(*gltfModel, "/tmp/mm_project.glb", true);
 #ifdef __EMSCRIPTEN__
       EM_ASM(js_exportAnimationFinished(););
 #endif
@@ -2568,3 +2568,5 @@ bool MainWindow::exportAnimationRunning() { return gltfModel != nullptr; }
 
 void MainWindow::pauseAnimation() { pauseAll(animStatus); }
 void MainWindow::resumeAnimation() { resumeAll(animStatus); }
+
+int MainWindow::getNumberOfAnimationFrames() { return cpAnimSync.getLength(); }

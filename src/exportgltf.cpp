@@ -42,13 +42,14 @@ void exportStart(tinygltf::Model &m, const Imguc &textureImg) {
   m.materials.push_back(material);
 }
 
-void exportStop(tinygltf::Model &m, const std::string &outFn) {
+void exportStop(tinygltf::Model &m, const std::string &outFn,
+                bool writeBinary) {
   tinygltf::TinyGLTF gltf;
   gltf.WriteGltfSceneToFile(&m, outFn,
-                            true,   // embedImages
-                            true,   // embedBuffers
-                            true,   // pretty print
-                            true);  // write binary
+                            true,          // embedImages
+                            true,          // embedBuffers
+                            !writeBinary,  // pretty print
+                            writeBinary);  // write binary
 }
 
 void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
@@ -210,7 +211,7 @@ void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
       accessor.count = nFrames;
       accessor.type = TINYGLTF_TYPE_SCALAR;
       accessor.minValues.push_back(0);
-      accessor.maxValues.push_back(nFrames / static_cast<float>(FPS));
+      accessor.maxValues.push_back((nFrames - 1) / static_cast<float>(FPS));
       m.accessors.push_back(accessor);
     }
     {

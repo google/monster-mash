@@ -118,9 +118,9 @@ function js_exportAnimationFinished() {
   abortBtnEl.prop('disabled', true);
   progressEl.addClass('bg-success');
 
-  const content = FS.readFile("/tmp/mm_project.gltf");
+  const content = FS.readFile("/tmp/mm_project.glb");
   var blob = new Blob([content], { type: "application/octet-stream" });
-  saveAs(blob, "mm_project.gltf");
+  saveAs(blob, "mm_project.glb");
 }
 function js_recordingModeStopped() {
   $('.buttonRecord').removeClass('active');
@@ -271,9 +271,6 @@ $('.buttonMode').click(function(e) {
   }, timeout);
 });
 
-$('#buttonAnimateAntelope').click(function() {
-  $('#buttonAnimate').click();
-});
 $('#buttonNewProject, #buttonNewProjectFileMenu').click(function() {
   if (confirm('Do you want to start over from scratch?')) {
     Module._reset();
@@ -393,20 +390,30 @@ $('#buttonPasteAnimation').click(function() {
 $('#buttonExportAsOBJ').click(function() {
   Module._exportAsOBJ();
 });
+$('#exportAnimationPrerollFrames').change(function() {
+  const max = parseInt($(this).attr('max'));
+  const min = parseInt($(this).attr('min'));
+  const curr = $(this).val();
+  if (curr > max) $(this).val(max);
+  else if (curr < min) $(this).val(min);
+});
 $('#buttonExportAnimation').click(function() {
   var prerollFramesEl = $('#exportAnimationPrerollFrames');
   var progressEl = $('#exportAnimationProgress');
-  prerollFramesEl.attr({'min': '0', 'max': '1000'});
+  const nFrames = Module._getNumberOfAnimationFrames();
+  prerollFramesEl.attr({'min': '0', 'max': nFrames*5});
   progressEl.text("");
   progressEl.css("width", "0%");
   progressEl.removeClass('bg-success');
   Module._pauseAnimation();
+  $('#exportAnimationNumFrames').text(nFrames);
+//   prerollFramesEl.val(Math.max(Math.round(0.25*nFrames)), 5);
   $('#modalDialogExportAnimation').modal();
 });
 $('#exportAnimationButtonExport').click(function() {
   var prerollFramesEl = $('#exportAnimationPrerollFrames');
   var progressEl = $('#exportAnimationProgress');
-  var preview = $('#exportAnimationButtonPreview').prop("checked");
+  var resolveDepth = $('#exportAnimationButtonFull').prop("checked");
   var exportBtnEl = $('#exportAnimationButtonExport');
   var abortBtnEl = $('#exportAnimationButtonCancel');
   exportBtnEl.addClass('disabled');
@@ -416,7 +423,7 @@ $('#exportAnimationButtonExport').click(function() {
   progressEl.text("");
   progressEl.css("width", "0%");
   progressEl.removeClass('bg-success');
-  Module._exportAnimationStart(prerollFramesEl.val(), !preview);
+  Module._exportAnimationStart(prerollFramesEl.val(), resolveDepth);
 });
 $('#exportAnimationButtonCancel').click(function() {
   var exportBtnEl = $('#exportAnimationButtonExport');
