@@ -26,7 +26,6 @@ limitations under the License.
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1221" />
     <meta property="og:image:height" content="641" />
-
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>Monster Mash: New Sketch-Based Modeling and Animation Tool</title>
     <link rel="stylesheet" href="includes/main.css">
@@ -167,6 +166,10 @@ limitations under the License.
               
               <table class="whatsNewTable">
                 <tr>
+                  <td>March&nbsp;9,&nbsp;2021</td>
+                  <td>The entire textured animation can be exported to the <a href="https://www.khronos.org/gltf/" target="_blank">glTF format</a>, which allows importing the results into various 3D modeling software (tested in Blender). <a href="#exportToAnimationInfo">Read more&hellip;</a></td>
+                </tr>
+                <tr>
                   <td>December&nbsp;15,&nbsp;2020</td>
                   <td>Added a link to a <a href="https://forums.cgsociety.org/t/monster-mash-a-tool-for-casual-3d-modeling-and-animation/2061144" target="_blank">discussion thread about Monster Mash</a>.</td>
                 </tr>
@@ -183,7 +186,7 @@ limitations under the License.
 
 <p>Monster Mash is a new sketch-based modeling and animation tool that allows you to quickly sketch a character, inflate it into 3D, and promptly animate it. You can perform all interactions in the sketching plane. No 3D manipulation is required.</p>
 
-<p>This demo accompanies a paper Dvorožňák et al.: <a href="https://dcgi.fel.cvut.cz/home/sykorad/monster_mash" target="_blank">Monster Mash: A Single-View Approach to Casual 3D Modeling and Animation</a> published in <em>ACM Transactions on Graphics</em> 39(6):214 and presented at SIGGRAPH Asia 2020 conference. The demo is <b>free to use for evaluation and research purposes</b>.</p>
+<p>This demo accompanies a paper Dvorožňák et al.: <a href="https://dcgi.fel.cvut.cz/home/sykorad/monster_mash" target="_blank">Monster Mash: A Single-View Approach to Casual 3D Modeling and Animation</a> published in <em>ACM Transactions on Graphics</em> 39(6):214 and presented at SIGGRAPH Asia 2020 conference. The source code for this demo is <a href="https://github.com/google/monster-mash" target="_blank">available</a> under the Apache-2.0 license. The demo is <strong>free to use for evaluation and research purposes</strong>.</p>
 
 <h6 class="pt-2">1.1. Requirements</h6>
 
@@ -270,7 +273,18 @@ limitations under the License.
 <p>When you already draw a shape in the Monster Mash demo which you would like to texture, use <button type="button" class="btn btn-sm buttonSaveProjectInactive disabled inactive" disabled>&nbsp;</button> button's option <b>Export a template image&hellip;</b>. This option allows you to save an image of the current shape on your hard-drive over which you can then draw using your favorite drawing/painting tool and then upload it back using the <button type="button" class="btn btn-sm buttonOpenProjectInactive disabled inactive" disabled>&nbsp;</button> button's option <b>Import template image&hellip;</b>.</p>
 
 <a name="exportToOBJInfo"></a>
-The current animation frame can be exported to the <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file" target="_blank">Wavefront .obj file</a> by selecting <b>Export the current animation frame as .obj file&hellip;</b> from the sub-menu of the save button <button type="button" class="btn btn-sm buttonSaveProjectInactive disabled inactive" disabled>&nbsp;</button>. If a template image is mapped to the mesh and <b>Show template image</b> option in the <button type="button" class="btn btn-sm disabled inactive dropdown-toggle buttonOtherMenu" disabled></button> sub-menu is checked, a material .mtl file with a .png texture image is also exported.
+<p><strong>Export to OBJ file.</strong> The current animation frame can be exported to the <a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file" target="_blank">Wavefront .obj file</a> by selecting <b>Export the current animation frame as .obj file&hellip;</b> from the sub-menu of the save button <button type="button" class="btn btn-sm buttonSaveProjectInactive disabled inactive" disabled>&nbsp;</button>. If a template image is mapped to the mesh and <b>Show template image</b> option in the <button type="button" class="btn btn-sm disabled inactive dropdown-toggle buttonOtherMenu" disabled></button> sub-menu is checked, a material .mtl file with a .png texture image is also exported.</p>
+
+<a name="exportToAnimationInfo"></a>
+<p>
+<strong>Export animation to glTF.</strong> The entire textured animation can be exported to the <a href="https://www.khronos.org/gltf/" target="_blank">glTF format</a> (.glb file), which allows importing the results into various 3D modeling software (tested in Blender).
+
+To access this feature, switch to the <button type="button" class="btn btn-sm disabled inactive" disabled><span class="buttonModeNumbers">3</span>Animate</button> mode and select <b>Export animation as glTF (.glb file)&hellip;</b> from the sub-menu of the save button <button type="button" class="btn btn-sm buttonSaveProjectInactive disabled inactive" disabled>&nbsp;</button>.
+
+The export first generates the file in the memory which may cause Monster Mash to crash if the animation being exported is too large. Therefore, make sure to save the project before exporting it.
+
+The exported file may be directly imported into a recent version of <a href="https://www.blender.org" target="_blank">Blender</a>. After importing the file, make sure to turn on the texture projection in the Viewport Shading menu in Blender. Individual animation frames are exported as <a href="https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#morph-targets" target="_blank">Morph Targets</a>, which are converted to Shape Keys in Blender. Note that the resulting animation is vertex-based, i.e. keyframed animation of individual vertices of a mesh (opposed to the traditional skeleton-based animation).
+</p>
 
 
 <h5 class="pt-3">4. Other Settings</h5>
@@ -423,25 +437,25 @@ The current animation frame can be exported to the <a href="https://en.wikipedia
             </button>
           </div>
           <div class="modal-body">
-            <p class="p-2"><small><strong>Warning:</strong> The export first generates the file in the memory which may cause Monster Mash to crash when the animation is too large. Therefore, make sure to save the project before exporting.</small></p>
+            <p class="p-2"><small><strong>Warning:</strong> The export first generates the file in the memory which may cause Monster Mash to crash if the animation being exported is too large. Therefore, make sure to save the project before exporting it.</small></p>
             <div class="row px-2 pt-2">
-              <div class="col-3">
-                Pre-roll:
+              <div class="col-4">
+                Pre-roll frames:
               </div>
-              <div class="col-9">
+              <div class="col-8">
                 <input type="number" autocomplete="off" min="0" max="0" value="0" id="exportAnimationPrerollFrames"> <span class="text-muted">(Animation length: <span id="exportAnimationNumFrames"></span>)</span>
               </div>
             </div>
             <div class="row px-2">
               <div class="col-12">
-                <small class="form-text text-muted">Number of frames to precompute before exporting the sequence.</small>
+                <small class="form-text text-muted">Number of frames to precompute before exporting the sequence. Useful for obtaining animation loops without glitches.</small>
               </div>
             </div>
             <div class="row px-2 pt-2">
-              <div class="col-3">
+              <div class="col-4">
                 Full quality:
               </div>
-              <div class="col-9">
+              <div class="col-8">
                 <label>
                   <input type="checkbox" autocomplete="off" id="exportAnimationButtonFull" aria-checked="true" checked> Enable
                 </label>
