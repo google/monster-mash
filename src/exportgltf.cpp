@@ -258,6 +258,7 @@ void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
   tinygltf::Mesh mesh;
   mesh.primitives.push_back(primitive);
   if (nFrames > 1) {
+    mesh.weights.resize(nFrames - 1, 0);
     vector<tinygltf::Value> morphTargetNames;
     for (int i = 0; i < nFrames; i++) {
       morphTargetNames.push_back(
