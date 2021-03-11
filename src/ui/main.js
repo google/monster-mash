@@ -146,9 +146,7 @@ function resetToModuleState() {
 
 // event listener
 $(window).keydown(function(e) {
-  if ($('#modalDialogQuickTutorial').is(':visible') ||
-      $('#modalDialogSettings').is(':visible') ||
-      $('#modalDialogExportAnimation').is(':visible')) {
+  if ($('div.modal').is(':visible')) {
     // skip for modal dialogs
     return;
   }
@@ -390,22 +388,25 @@ $('#buttonPasteAnimation').click(function() {
 $('#buttonExportAsOBJ').click(function() {
   Module._exportAsOBJ();
 });
+function exportAnimationPrerollFramesCheck(el) {
+  const max = parseInt(el.attr('max'));
+  const min = parseInt(el.attr('min'));
+  const curr = el.val();
+  if (curr > max) el.val(max);
+  else if (curr < min) el.val(min);
+}
 $('#exportAnimationPrerollFrames').change(function() {
-  const max = parseInt($(this).attr('max'));
-  const min = parseInt($(this).attr('min'));
-  const curr = $(this).val();
-  if (curr > max) $(this).val(max);
-  else if (curr < min) $(this).val(min);
+  exportAnimationPrerollFramesCheck($(this));
 });
 $('#buttonExportAnimation').click(function() {
   var prerollFramesEl = $('#exportAnimationPrerollFrames');
   var progressEl = $('#exportAnimationProgress');
   const nFrames = Module._getNumberOfAnimationFrames();
   prerollFramesEl.attr({'min': '0', 'max': nFrames*5});
+  exportAnimationPrerollFramesCheck(prerollFramesEl);
   progressEl.text("");
   progressEl.css("width", "0%");
   progressEl.removeClass('bg-success');
-  Module._pauseAnimation();
   $('#exportAnimationNumFrames').text(nFrames);
 //   prerollFramesEl.val(Math.max(Math.round(0.25*nFrames)), 5);
   $('#modalDialogExportAnimation').modal();
@@ -443,10 +444,18 @@ $('#modalDialogExportAnimation').on('hide.bs.modal', function() {
     ret = confirm('Are you sure you want cancel the export?');
     if (ret) $('#exportAnimationButtonCancel').click();
   }
-  if (ret) {
-    Module._resumeAnimation();
-  }
   return ret;
+});
+
+// after showing modal dialogs, disable SDL keyboard events and pause animation
+$('div.modal').on('show.bs.modal', function() {
+  Module._disableKeyboardEvents();
+  Module._pauseAnimation();
+});
+// after hiding modal dialogs, enable SDL keyboard events and resume animation
+$('div.modal').on('hide.bs.modal', function() {
+  Module._enableKeyboardEvents();
+  Module._resumeAnimation();
 });
 
 // initialize tooltips

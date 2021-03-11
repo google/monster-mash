@@ -237,6 +237,14 @@ EMSCRIPTEN_KEEPALIVE void resumeAnimation() { mainWindow.resumeAnimation(); }
 EMSCRIPTEN_KEEPALIVE int getNumberOfAnimationFrames() {
   return mainWindow.getNumberOfAnimationFrames();
 }
+
+EMSCRIPTEN_KEEPALIVE void enableKeyboardEvents() {
+  mainWindow.enableKeyboardEvents();
+}
+
+EMSCRIPTEN_KEEPALIVE void disableKeyboardEvents() {
+  mainWindow.disableKeyboardEvents();
+}
 }
 #endif
 

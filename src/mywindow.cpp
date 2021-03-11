@@ -36,13 +36,6 @@ int MyWindow::init(const std::string& windowTitle) {
     return 1;
   }
 
-#ifdef __EMSCRIPTEN__
-  // prevent taking events
-  SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
-  SDL_EventState(SDL_KEYDOWN, SDL_DISABLE);
-  SDL_EventState(SDL_KEYUP, SDL_DISABLE);
-#endif
-
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -187,7 +180,6 @@ bool MyWindow::mainTick() {
         break;
       case SDL_KEYUP:
       case SDL_KEYDOWN: {
-        DEBUG_CMD_MM(cout << "keyevent " << event.key.keysym.mod << endl;)
         MyKeyEvent keyEvent;
         if (event.key.keysym.mod & KMOD_SHIFT) keyEvent.shiftModifier = true;
         if (event.key.keysym.mod & KMOD_CTRL) keyEvent.ctrlModifier = true;
@@ -291,3 +283,14 @@ void MyWindow::setMouseEventsSimulationByTouch(bool enable) {
 int MyWindow::getWidth() const { return windowWidth; }
 
 int MyWindow::getHeight() const { return windowHeight; }
+
+void MyWindow::setKeyboardEventState(bool enabled) {
+  auto state = enabled ? SDL_ENABLE : SDL_DISABLE;
+  SDL_EventState(SDL_TEXTINPUT, state);
+  SDL_EventState(SDL_KEYDOWN, state);
+  SDL_EventState(SDL_KEYUP, state);
+}
+
+void MyWindow::enableKeyboardEvents() { setKeyboardEventState(true); }
+
+void MyWindow::disableKeyboardEvents() { setKeyboardEventState(false); }
