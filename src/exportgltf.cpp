@@ -302,41 +302,78 @@ void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
   }
 }
 
-void exportMorphTarget(const MatrixXfR &V, const int frame, const int nFrames,
-                       const bool hasTexture, tinygltf::Model &m) {
+void exportMorphTarget(const MatrixXfR &V, const MatrixXfR &N, const int frame,
+                       const int nFrames, const bool hasTexture,
+                       tinygltf::Model &m) {
+  bool mtHasNormals = N.size() > 0;
   // buffer for morph target
   tinygltf::Buffer buffer;
   const auto nBytesV = V.size() * sizeof(float);
-  buffer.data.resize(nBytesV);
+  const auto nBytesN = N.size() * sizeof(float);
+  buffer.name = "MT" + to_string(frame);
+  buffer.data.resize(nBytesV + nBytesN);
   memcpy(buffer.data.data(), V.data(), nBytesV);
+  if (mtHasNormals > 0) {
+    memcpy(buffer.data.data() + nBytesV, N.data(), nBytesN);
+  }
   m.buffers.push_back(buffer);
 
-  // buffer view for morph target
-  tinygltf::BufferView bufferView;
-  bufferView.buffer = 2 + frame - 1;
-  bufferView.byteOffset = 0;
-  bufferView.byteLength = nBytesV;
-  bufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
-  m.bufferViews.push_back(bufferView);
+  // buffer views for morph target
+  {
+    tinygltf::BufferView bufferView;
+    bufferView.name = "MT" + to_string(frame) + "_V";
+    bufferView.buffer = 2 + frame - 1;
+    bufferView.byteOffset = 0;
+    bufferView.byteLength = nBytesV;
+    bufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+    m.bufferViews.push_back(bufferView);
+  }
+  if (mtHasNormals > 0) {
+    tinygltf::BufferView bufferView;
+    bufferView.name = "MT" + to_string(frame) + "_N";
+    bufferView.buffer = 2 + frame - 1;
+    bufferView.byteOffset = nBytesV;
+    bufferView.byteLength = nBytesN;
+    bufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+    m.bufferViews.push_back(bufferView);
+  }
 
-  // accessor for morph target
-  const int bufViewIdAccId = 5 + (hasTexture ? 1 : 0) + frame - 1;
-  tinygltf::Accessor accessor;
-  accessor.bufferView = bufViewIdAccId;
-  accessor.byteOffset = 0;
-  accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
-  accessor.count = V.rows();
-  accessor.type = TINYGLTF_TYPE_VEC3;
-  auto VMin = V.colwise().minCoeff();
-  auto VMax = V.colwise().maxCoeff();
-  accessor.minValues = {VMin(0), VMin(1), VMin(2)};
-  accessor.maxValues = {VMax(0), VMax(1), VMax(2)};
-  m.accessors.push_back(accessor);
+  // accessors for morph target
+  const int bufViewIdAccIdV =
+      5 + (hasTexture ? 1 : 0) + (mtHasNormals ? 2 : 1) * (frame - 1);
+  const int bufViewIdAccIdN = bufViewIdAccIdV + 1;
+  {
+    tinygltf::Accessor accessor;
+    accessor.name = "MT" + to_string(frame) + "_V";
+    accessor.bufferView = bufViewIdAccIdV;
+    accessor.byteOffset = 0;
+    accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+    accessor.count = V.rows();
+    accessor.type = TINYGLTF_TYPE_VEC3;
+    auto VMin = V.colwise().minCoeff();
+    auto VMax = V.colwise().maxCoeff();
+    accessor.minValues = {VMin(0), VMin(1), VMin(2)};
+    accessor.maxValues = {VMax(0), VMax(1), VMax(2)};
+    m.accessors.push_back(accessor);
+  }
+  if (mtHasNormals) {
+    tinygltf::Accessor accessor;
+    accessor.name = "MT" + to_string(frame) + "_N";
+    accessor.bufferView = bufViewIdAccIdN;
+    accessor.byteOffset = 0;
+    accessor.componentType = TINYGLTF_COMPONENT_TYPE_FLOAT;
+    accessor.count = N.rows();
+    accessor.type = TINYGLTF_TYPE_VEC3;
+    m.accessors.push_back(accessor);
+  }
 
   // alter primitive with accessor to morph target
   tinygltf::Primitive &primitive = m.meshes[0].primitives[0];
-  primitive.targets.push_back(
-      {{"POSITION", bufViewIdAccId}});  // accessor index for morph target
+  pair<string, int> targetV = {"POSITION", bufViewIdAccIdV};
+  pair<string, int> targetN = {"NORMAL", bufViewIdAccIdN};
+  map<string, int> targets = {targetV};
+  if (mtHasNormals) targets.insert(targetN);
+  primitive.targets.push_back(targets);
 }
 
 }  // namespace exportgltf

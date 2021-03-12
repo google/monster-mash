@@ -439,10 +439,10 @@ The exported file may be directly imported into a recent version of <a href="htt
           <div class="modal-body">
             <p class="p-2"><small><strong>Warning:</strong> The export first generates the file in the memory which may cause Monster Mash to crash if the animation being exported is too large. Therefore, make sure to save the project before exporting it.</small></p>
             <div class="row px-2 pt-2">
-              <div class="col-4">
+              <div class="col-5">
                 Pre-roll frames:
               </div>
-              <div class="col-8">
+              <div class="col-7">
                 <input type="number" autocomplete="off" min="0" max="0" value="0" id="exportAnimationPrerollFrames"> <span class="text-muted">(Animation length: <span id="exportAnimationNumFrames"></span>)</span>
               </div>
             </div>
@@ -452,10 +452,10 @@ The exported file may be directly imported into a recent version of <a href="htt
               </div>
             </div>
             <div class="row px-2 pt-2">
-              <div class="col-4">
+              <div class="col-5">
                 Full quality:
               </div>
-              <div class="col-8">
+              <div class="col-7">
                 <label>
                   <input type="checkbox" autocomplete="off" id="exportAnimationButtonFull" aria-checked="true" checked> Enable
                 </label>
@@ -464,6 +464,21 @@ The exported file may be directly imported into a recent version of <a href="htt
             <div class="row px-2">
               <div class="col-12">
                 <small class="form-text text-muted">Check this box to resolve the depth during the export. Uncheck for faster exports, which may, however, include interpenetrations.</small>
+              </div>
+            </div>
+            <div class="row px-2 pt-2">
+              <div class="col-5">
+                Per-frame normals:
+              </div>
+              <div class="col-7">
+                <label>
+                  <input type="checkbox" autocomplete="off" id="exportAnimationPerFrameNormals" aria-checked="false"> Enable
+                </label>
+              </div>
+            </div>
+            <div class="row px-2">
+              <div class="col-12">
+                <small class="form-text text-muted">Check this option to also export normals for each frame. The resulting file will be twice as large.</small>
               </div>
             </div>
             <div class="row px-2 py-4 text-center">

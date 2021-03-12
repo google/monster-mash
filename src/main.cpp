@@ -212,9 +212,10 @@ EMSCRIPTEN_KEEPALIVE void exportAsOBJ() {
   EM_ASM(js_frameExportedToOBJ(););
 }
 
-EMSCRIPTEN_KEEPALIVE void exportAnimationStart(int preroll, bool solveForZ) {
+EMSCRIPTEN_KEEPALIVE void exportAnimationStart(int preroll, bool solveForZ,
+                                               bool perFrameNormals) {
   if (!mainWindow.exportAnimationRunning()) {
-    mainWindow.exportAnimationStart(preroll, solveForZ);
+    mainWindow.exportAnimationStart(preroll, solveForZ, perFrameNormals);
   } else {
     mainWindow.exportAnimationStop();
   }

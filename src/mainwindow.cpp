@@ -707,7 +707,7 @@ void MainWindow::keyPressEvent(const MyKeyEvent &keyEvent) {
     //             defData.Faces, MatrixXd(), defData.Faces);
 
     if (!exportAnimationRunning())
-      exportAnimationStart(0, false);
+      exportAnimationStart(0, false, false);
     else
       exportAnimationStop();
   }
@@ -2438,7 +2438,8 @@ void MainWindow::exportAsOBJ(const std::string &outDir,
   }
 }
 
-void MainWindow::exportAnimationStart(int preroll, bool solveForZ) {
+void MainWindow::exportAnimationStart(int preroll, bool solveForZ,
+                                      bool perFrameNormals) {
   const int nFrames = cpAnimSync.getLength();
   manualTimepoint = true;
   if (nFrames > 0) {
@@ -2452,6 +2453,7 @@ void MainWindow::exportAnimationStart(int preroll, bool solveForZ) {
   gltfModel = new tinygltf::Model;
   exportAnimationWaitForBeginning = true;
   exportAnimationPreroll = preroll;
+  exportPerFrameNormals = perFrameNormals;
   exportedFrames = 0;
 
   exportgltf::exportStart(*gltfModel, templateImg);
@@ -2519,11 +2521,15 @@ void MainWindow::exportAnimationFrame() {
     const int nFrames = cpAnimSync.getLength();
     const bool hasTexture = !templateImg.isNull();
 
+    exportgltf::MatrixXfR N;
+    if (exportedFrames == 0 || exportPerFrameNormals) {
+      N = defData.normals.cast<float>();
+      N.array().rowwise() *= RowVector3f(1, -1, -1).array();
+    }
     if (exportedFrames == 0) {
       exportBaseV = V;
+      exportBaseN = N;
       exportgltf::MatrixXusR F = defData.Faces.cast<unsigned short>();
-      exportgltf::MatrixXfR N = defData.normals.cast<float>();
-      N.array().rowwise() *= RowVector3f(1, -1, -1).array();
 
       exportgltf::MatrixXfR TC;
       if (hasTexture) {
@@ -2533,8 +2539,10 @@ void MainWindow::exportAnimationFrame() {
 
       exportgltf::exportFullModel(V, N, F, TC, nFrames, 24, *gltfModel);
     } else {
-      exportgltf::exportMorphTarget(V - exportBaseV, exportedFrames, nFrames,
-                                    hasTexture, *gltfModel);
+      V -= exportBaseV;
+      if (exportPerFrameNormals) N -= exportBaseN;
+      exportgltf::exportMorphTarget(V, N, exportedFrames, nFrames, hasTexture,
+                                    *gltfModel);
     }
     exportedFrames++;
   }

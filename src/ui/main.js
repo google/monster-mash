@@ -415,6 +415,7 @@ $('#exportAnimationButtonExport').click(function() {
   var prerollFramesEl = $('#exportAnimationPrerollFrames');
   var progressEl = $('#exportAnimationProgress');
   var resolveDepth = $('#exportAnimationButtonFull').prop("checked");
+  var perFrameNormals = $('#exportAnimationPerFrameNormals').prop("checked");
   var exportBtnEl = $('#exportAnimationButtonExport');
   var abortBtnEl = $('#exportAnimationButtonCancel');
   exportBtnEl.addClass('disabled');
@@ -424,7 +425,7 @@ $('#exportAnimationButtonExport').click(function() {
   progressEl.text("");
   progressEl.css("width", "0%");
   progressEl.removeClass('bg-success');
-  Module._exportAnimationStart(prerollFramesEl.val(), resolveDepth);
+  Module._exportAnimationStart(prerollFramesEl.val(), resolveDepth, perFrameNormals);
 });
 $('#exportAnimationButtonCancel').click(function() {
   var exportBtnEl = $('#exportAnimationButtonExport');

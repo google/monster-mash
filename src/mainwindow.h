@@ -67,7 +67,7 @@ class MainWindow : public MyWindow {
   void offsetSelectedCpAnimsByFrames(double offset);
   void offsetSelectedCpAnimsByPercentage(double offset);
   void setAnimRecMode(AnimMode animMode);
-  void exportAnimationStart(int preroll, bool solveForZ);
+  void exportAnimationStart(int preroll, bool solveForZ, bool perFrameNormals);
   void exportAnimationStop(bool exportModel = true);
   void exportAnimationFrame();
   bool exportAnimationRunning();
@@ -308,9 +308,10 @@ class MainWindow : public MyWindow {
   CPAnim &cpAnimSync = cpData.cpAnimSync;
   tinygltf::Model *gltfModel = nullptr;
   int exportAnimationPreroll = 0;
+  bool exportPerFrameNormals = false;
   bool exportAnimationWaitForBeginning = true;
   int exportedFrames = 0;
-  exportgltf::MatrixXfR exportBaseV;
+  exportgltf::MatrixXfR exportBaseV, exportBaseN;
   PauseStatus animStatus;
 };
 
