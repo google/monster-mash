@@ -440,10 +440,18 @@ The exported file may be directly imported into a recent version of <a href="htt
             <p class="p-2"><small><strong>Warning:</strong> The export first generates the file in the memory which may cause Monster Mash to crash if the animation being exported is too large. Therefore, make sure to save the project before exporting it.</small></p>
             <div class="row px-2 pt-2">
               <div class="col-5">
+                Animation length:
+              </div>
+              <div class="col-7">
+                <span id="exportAnimationNumFrames"></span> frames
+              </div>
+            </div>
+            <div class="row px-2 pt-2">
+              <div class="col-5">
                 Pre-roll frames:
               </div>
               <div class="col-7">
-                <input type="number" autocomplete="off" min="0" max="0" value="0" id="exportAnimationPrerollFrames"> <span class="text-muted">(Animation length: <span id="exportAnimationNumFrames"></span>)</span>
+                <input type="number" autocomplete="off" min="0" max="0" value="0" id="exportAnimationPrerollFrames">
               </div>
             </div>
             <div class="row px-2">

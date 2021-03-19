@@ -42,7 +42,6 @@ set(SOURCES
     ../third_party/SDL2_gfx-mod/SDL2_gfxPrimitives-mod.c
     ../third_party/SDL2_gfx/SDL2_rotozoom.c
     ../third_party/tinygltf/tinygltf.cpp
-    ../third_party/base64/base64.cpp
 )
 
 set(HEADERS
@@ -151,7 +150,6 @@ set(INCLUDEPATH
     ../third_party/SDL2_gfx
     ../third_party/SDL2_gfx-mod
     ../third_party/tinygltf
-    ../third_party/base64
     ${SDL2_INCLUDE_DIRS}
 )
 

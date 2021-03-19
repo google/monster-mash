@@ -14,14 +14,46 @@
 
 #include "exportgltf.h"
 
-#include <base64.h>
-
 using namespace std;
 
 namespace exportgltf {
 
-void exportStart(tinygltf::Model &m, const Imguc &textureImg) {
-  if (!textureImg.isNull()) {
+void ExportGltf::exportStart(const MatrixXfR &V, const MatrixXfR &N,
+                             const MatrixXusR &F, const MatrixXfR &TC,
+                             const int nFrames, bool mtHasNormals,
+                             const int FPS, const Imguc &textureImg) {
+  this->mtHasNormals = mtHasNormals;
+  this->nFrames = nFrames;
+  this->FPS = FPS;
+  this->hasTexture = !textureImg.isNull();
+  nBytesMTCum = 0;
+
+  // allocate memory for a single one buffer containing all data
+  // buffer data for base model
+  nBytesF = F.size() * sizeof(unsigned short);
+  nBytesV = V.size() * sizeof(float);
+  nBytesN = N.size() * sizeof(float);
+  nBytesTC = TC.size() * sizeof(float);
+  nBytesBase = nBytesF + nBytesV + nBytesN + nBytesTC;
+
+  // buffer data for animation
+  nWeights = nFrames * (nFrames - 1);
+  nBytesWeights = nWeights * sizeof(float);
+  nBytesTime = nFrames * sizeof(float);
+  nBytesAnim = nBytesTime + nBytesWeights;
+
+  // buffer data for morph targets
+  nBytesMTTotal = 0;
+  for (int i = 0; i < nFrames - 1; ++i) {
+    nBytesMTTotal += nBytesV;
+    if (mtHasNormals) nBytesMTTotal += nBytesN;
+  }
+
+  // buffer data for image
+  nBytesImage = 0;
+  unsigned char *pngData;
+  int pngDataLength;
+  if (hasTexture) {
     tinygltf::Sampler sampler;
     sampler.magFilter = TINYGLTF_TEXTURE_FILTER_LINEAR;
     sampler.minFilter = TINYGLTF_TEXTURE_FILTER_LINEAR;
@@ -35,11 +67,9 @@ void exportStart(tinygltf::Model &m, const Imguc &textureImg) {
     image.component = textureImg.ch;
     image.bits = 8;
     image.pixel_type = TINYGLTF_COMPONENT_TYPE_BYTE;
-    image.uri = "data:image/png;base64,";
-    unsigned char *pngData;
-    int length;
-    textureImg.savePNG(pngData, length);
-    image.uri += base64_encode(pngData, static_cast<unsigned int>(length));
+    image.mimeType = "image/png";
+    textureImg.savePNG(pngData, pngDataLength);
+    nBytesImage = pngDataLength;
     m.images.push_back(image);
 
     tinygltf::Texture texture;
@@ -48,16 +78,35 @@ void exportStart(tinygltf::Model &m, const Imguc &textureImg) {
     m.textures.push_back(texture);
   }
 
+  tinygltf::Buffer buffer;
+  buffer.data.resize(nBytesBase + nBytesAnim + nBytesMTTotal + nBytesImage);
+  if (hasTexture) {
+    memcpy(buffer.data.data() + nBytesBase + nBytesAnim + nBytesMTTotal,
+           pngData, pngDataLength);
+  }
+  m.buffers.push_back(buffer);
+
   tinygltf::Material material;
-  if (!textureImg.isNull())
+  if (hasTexture) {
     material.pbrMetallicRoughness.baseColorTexture.index = 0;
+  }
   material.pbrMetallicRoughness.metallicFactor = 0;
   material.pbrMetallicRoughness.roughnessFactor = 1;
   m.materials.push_back(material);
 }
 
-void exportStop(tinygltf::Model &m, const std::string &outFn,
-                bool writeBinary) {
+void ExportGltf::exportStop(const std::string &outFn, bool writeBinary) {
+  if (hasTexture) {
+    tinygltf::BufferView bufView;
+    bufView.name = "texture";
+    bufView.buffer = 0;
+    bufView.byteOffset = nBytesBase + nBytesAnim + nBytesMTTotal;
+    bufView.byteLength = nBytesImage;
+    //    bufView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+    m.bufferViews.push_back(bufView);
+    m.images[0].bufferView = m.bufferViews.size() - 1;
+  }
+
   tinygltf::TinyGLTF gltf;
   gltf.WriteGltfSceneToFile(&m, outFn,
                             true,          // embedImages
@@ -66,17 +115,10 @@ void exportStop(tinygltf::Model &m, const std::string &outFn,
                             writeBinary);  // write binary
 }
 
-void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
-                     const MatrixXusR &F, const MatrixXfR &TC,
-                     const int nFrames, const int FPS, tinygltf::Model &m) {
-  // buffer for base model
-  tinygltf::Buffer buffer;
-  const auto nBytesV = V.size() * sizeof(float);
-  const auto nBytesF = F.size() * sizeof(unsigned short);
-  const auto nBytesN = N.size() * sizeof(float);
-  const auto nBytesTC = TC.size() * sizeof(float);
-  buffer.name = "base";
-  buffer.data.resize(nBytesF + nBytesV + nBytesN + nBytesTC);
+void ExportGltf::exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
+                                 const MatrixXusR &F, const MatrixXfR &TC) {
+  // buffer data for base model
+  tinygltf::Buffer &buffer = m.buffers[0];
   memcpy(buffer.data.data(), F.data(), nBytesF);
   memcpy(buffer.data.data() + nBytesF, V.data(), nBytesV);
   memcpy(buffer.data.data() + nBytesF + nBytesV, N.data(), nBytesN);
@@ -84,29 +126,21 @@ void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
     memcpy(buffer.data.data() + nBytesF + nBytesV + nBytesN, TC.data(),
            nBytesTC);
   }
-  m.buffers.push_back(buffer);
 
-  // buffer for animation
-  const int nWeights = nFrames * (nFrames - 1);
-  const auto nBytesWeights = nWeights * sizeof(float);
-  const auto nBytesTime = nFrames * sizeof(float);
-  const auto nBytesAnim = nBytesTime + nBytesWeights;
+  // buffer data for animation
   if (nFrames > 1) {
-    tinygltf::Buffer buffer;
-    buffer.name = "anim";
-    buffer.data.resize(nBytesAnim);
     // time
     vector<float> time(nFrames);
     for (int i = 0; i < nFrames; i++) time[i] = i / static_cast<float>(FPS);
-    memcpy(buffer.data.data(), time.data(), nBytesTime);
+    memcpy(buffer.data.data() + nBytesBase, time.data(), nBytesTime);
 
     // weights
     vector<float> weights(nWeights, 0);
     for (int i = 0; i < nFrames - 1; i++) {
       weights[(i + 1) * (nFrames - 1) + i] = 1;
     }
-    memcpy(buffer.data.data() + nBytesTime, weights.data(), nBytesWeights);
-    m.buffers.push_back(buffer);
+    memcpy(buffer.data.data() + nBytesBase + nBytesTime, weights.data(),
+           nBytesWeights);
   }
 
   // buffer views for base model
@@ -152,16 +186,16 @@ void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
     {
       // time
       tinygltf::BufferView bufView;
-      bufView.buffer = 1;  // anim buffer index
-      bufView.byteOffset = 0;
+      bufView.buffer = 0;
+      bufView.byteOffset = nBytesBase;
       bufView.byteLength = nBytesTime;
       m.bufferViews.push_back(bufView);
     }
     {
       // weights
       tinygltf::BufferView bufView;
-      bufView.buffer = 1;  // anim buffer index
-      bufView.byteOffset = nBytesTime;
+      bufView.buffer = 0;
+      bufView.byteOffset = nBytesBase + nBytesTime;
       bufView.byteLength = nBytesWeights;
       m.bufferViews.push_back(bufView);
     }
@@ -260,7 +294,7 @@ void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
   if (nFrames > 1) {
     mesh.weights.resize(nFrames - 1, 0);
     vector<tinygltf::Value> morphTargetNames;
-    for (int i = 0; i < nFrames; i++) {
+    for (int i = 0; i < nFrames - 1; i++) {
       morphTargetNames.push_back(
           tinygltf::Value("Morph Target " + to_string(i)));
     }
@@ -302,39 +336,36 @@ void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
   }
 }
 
-void exportMorphTarget(const MatrixXfR &V, const MatrixXfR &N, const int frame,
-                       const int nFrames, const bool hasTexture,
-                       tinygltf::Model &m) {
-  bool mtHasNormals = N.size() > 0;
-  // buffer for morph target
-  tinygltf::Buffer buffer;
-  const auto nBytesV = V.size() * sizeof(float);
-  const auto nBytesN = N.size() * sizeof(float);
-  buffer.name = "MT" + to_string(frame);
-  buffer.data.resize(nBytesV + nBytesN);
-  memcpy(buffer.data.data(), V.data(), nBytesV);
+void ExportGltf::exportMorphTarget(const MatrixXfR &V, const MatrixXfR &N,
+                                   const int frame) {
+  // buffer data for morph target
+  tinygltf::Buffer &buffer = m.buffers[0];
+  size_t nBytesPrev = nBytesBase + nBytesAnim + nBytesMTCum;
+  memcpy(buffer.data.data() + nBytesPrev, V.data(), nBytesV);
   if (mtHasNormals > 0) {
-    memcpy(buffer.data.data() + nBytesV, N.data(), nBytesN);
+    memcpy(buffer.data.data() + nBytesPrev + nBytesV, N.data(), nBytesN);
   }
-  m.buffers.push_back(buffer);
+  size_t nBytesMTCurr = nBytesV + (mtHasNormals ? nBytesN : 0);
 
   // buffer views for morph target
   {
     tinygltf::BufferView bufferView;
     bufferView.name = "MT" + to_string(frame) + "_V";
-    bufferView.buffer = 2 + frame - 1;
-    bufferView.byteOffset = 0;
+    bufferView.buffer = 0;
+    bufferView.byteOffset =
+        nBytesBase + nBytesAnim + (frame - 1) * nBytesMTCurr;
     bufferView.byteLength = nBytesV;
-    bufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+    //    bufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
     m.bufferViews.push_back(bufferView);
   }
   if (mtHasNormals > 0) {
     tinygltf::BufferView bufferView;
     bufferView.name = "MT" + to_string(frame) + "_N";
-    bufferView.buffer = 2 + frame - 1;
-    bufferView.byteOffset = nBytesV;
+    bufferView.buffer = 0;
+    bufferView.byteOffset =
+        nBytesBase + nBytesAnim + (frame - 1) * nBytesMTCurr + nBytesV;
     bufferView.byteLength = nBytesN;
-    bufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
+    //    bufferView.target = TINYGLTF_TARGET_ARRAY_BUFFER;
     m.bufferViews.push_back(bufferView);
   }
 
@@ -374,6 +405,8 @@ void exportMorphTarget(const MatrixXfR &V, const MatrixXfR &N, const int frame,
   map<string, int> targets = {targetV};
   if (mtHasNormals) targets.insert(targetN);
   primitive.targets.push_back(targets);
+
+  nBytesMTCum += nBytesMTCurr;
 }
 
 }  // namespace exportgltf

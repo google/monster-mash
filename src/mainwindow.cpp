@@ -2449,14 +2449,12 @@ void MainWindow::exportAnimationStart(int preroll, bool solveForZ,
   defEng.solveForZ = solveForZ;  // resume z-deformation
   defPaused = false;
 
-  if (gltfModel != nullptr) delete gltfModel;
-  gltfModel = new tinygltf::Model;
+  if (gltfExporter != nullptr) delete gltfExporter;
+  gltfExporter = new exportgltf::ExportGltf;
   exportAnimationWaitForBeginning = true;
   exportAnimationPreroll = preroll;
   exportPerFrameNormals = perFrameNormals;
   exportedFrames = 0;
-
-  exportgltf::exportStart(*gltfModel, templateImg);
 
   repaint = true;
 
@@ -2469,15 +2467,15 @@ void MainWindow::exportAnimationStop(bool exportModel) {
   cpData.playAnimation = false;
   defPaused = true;
 
-  if (gltfModel != nullptr) {
+  if (gltfExporter != nullptr) {
     if (exportModel) {
-      exportgltf::exportStop(*gltfModel, "/tmp/mm_project.glb", true);
+      gltfExporter->exportStop("/tmp/mm_project.glb", true);
 #ifdef __EMSCRIPTEN__
       EM_ASM(js_exportAnimationFinished(););
 #endif
     }
-    delete gltfModel;
-    gltfModel = nullptr;
+    delete gltfExporter;
+    gltfExporter = nullptr;
   }
 
   repaint = true;
@@ -2486,7 +2484,7 @@ void MainWindow::exportAnimationStop(bool exportModel) {
 }
 
 void MainWindow::exportAnimationFrame() {
-  if (gltfModel == nullptr) {
+  if (gltfExporter == nullptr) {
     DEBUG_CMD_MM(cerr << "exportAnimationFrame: gltfModel == nullptr" << endl;);
     return;
   }
@@ -2537,12 +2535,13 @@ void MainWindow::exportAnimationFrame() {
               Array2f(templateImg.w, templateImg.h).transpose());
       }
 
-      exportgltf::exportFullModel(V, N, F, TC, nFrames, 24, *gltfModel);
+      gltfExporter->exportStart(V, N, F, TC, nFrames, exportPerFrameNormals, 24,
+                                templateImg);
+      gltfExporter->exportFullModel(V, N, F, TC);
     } else {
       V -= exportBaseV;
       if (exportPerFrameNormals) N -= exportBaseN;
-      exportgltf::exportMorphTarget(V, N, exportedFrames, nFrames, hasTexture,
-                                    *gltfModel);
+      gltfExporter->exportMorphTarget(V, N, exportedFrames);
     }
     exportedFrames++;
   }
@@ -2572,7 +2571,7 @@ void MainWindow::exportAnimationFrame() {
   repaint = true;
 }
 
-bool MainWindow::exportAnimationRunning() { return gltfModel != nullptr; }
+bool MainWindow::exportAnimationRunning() { return gltfExporter != nullptr; }
 
 void MainWindow::pauseAnimation() { pauseAll(animStatus); }
 void MainWindow::resumeAnimation() { resumeAll(animStatus); }

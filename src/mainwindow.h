@@ -306,11 +306,11 @@ class MainWindow : public MyWindow {
   int autoSmoothAnimFrom = -5, autoSmoothAnimTo = 5, autoSmoothAnimIts = 5;
   CPAnim copiedAnim;
   CPAnim &cpAnimSync = cpData.cpAnimSync;
-  tinygltf::Model *gltfModel = nullptr;
   int exportAnimationPreroll = 0;
   bool exportPerFrameNormals = false;
   bool exportAnimationWaitForBeginning = true;
   int exportedFrames = 0;
+  exportgltf::ExportGltf *gltfExporter = nullptr;
   exportgltf::MatrixXfR exportBaseV, exportBaseN;
   PauseStatus animStatus;
 };

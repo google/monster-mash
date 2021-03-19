@@ -29,13 +29,36 @@ typedef Eigen::Matrix<unsigned short, Eigen::Dynamic, Eigen::Dynamic,
                       Eigen::RowMajor>
     MatrixXusR;
 
-void exportStart(tinygltf::Model &m, const Imguc &textureImg);
-void exportStop(tinygltf::Model &m, const std::string &outFn, bool writeBinary);
-void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
-                     const MatrixXusR &F, const MatrixXfR &TC,
-                     const int nFrames, const int FPS, tinygltf::Model &m);
-void exportMorphTarget(const MatrixXfR &V, const MatrixXfR &N, const int frame, const int nFrames,
-                       const bool hasTexture, tinygltf::Model &m);
+class ExportGltf {
+ public:
+  void exportStart(const MatrixXfR &V, const MatrixXfR &N, const MatrixXusR &F,
+                   const MatrixXfR &TC, const int nFrames, bool mtHasNormals,
+                   const int FPS, const Imguc &textureImg);
+  void exportStop(const std::string &outFn, bool writeBinary);
+  void exportFullModel(const MatrixXfR &V, const MatrixXfR &N,
+                       const MatrixXusR &F, const MatrixXfR &TC);
+  void exportMorphTarget(const MatrixXfR &V, const MatrixXfR &N,
+                         const int frame);
+
+ private:
+  size_t nBytesF = 0;
+  size_t nBytesV = 0;
+  size_t nBytesN = 0;
+  size_t nBytesTC = 0;
+  size_t nBytesBase = 0;
+  int nWeights = 0;
+  size_t nBytesWeights = 0;
+  size_t nBytesTime = 0;
+  size_t nBytesAnim = 0;
+  size_t nBytesImage = 0;
+  size_t nBytesMTTotal = 0;
+  size_t nBytesMTCum = 0;
+  bool mtHasNormals = false;
+  int nFrames = 0;
+  int FPS = 0;
+  bool hasTexture = false;
+  tinygltf::Model m;
+};
 
 }  // namespace exportgltf
 
