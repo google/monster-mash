@@ -16,6 +16,7 @@
 #define MAINWINDOW_H
 
 #include "commonStructs.h"
+#include "exportgltf.h"
 #include "mywindow.h"
 
 class MainWindow : public MyWindow {
@@ -66,6 +67,13 @@ class MainWindow : public MyWindow {
   void offsetSelectedCpAnimsByFrames(double offset);
   void offsetSelectedCpAnimsByPercentage(double offset);
   void setAnimRecMode(AnimMode animMode);
+  void exportAnimationStart(int preroll, bool solveForZ, bool perFrameNormals);
+  void exportAnimationStop(bool exportModel = true);
+  void exportAnimationFrame();
+  bool exportAnimationRunning();
+  void pauseAnimation();
+  void resumeAnimation();
+  int getNumberOfAnimationFrames();
 
  protected:
   bool paintEvent();
@@ -122,6 +130,9 @@ class MainWindow : public MyWindow {
   void deselectAllControlPoints();
   void selectAllControlPoints();
   void selectAllRegions();
+
+  void pauseAll(PauseStatus &status);
+  void resumeAll(PauseStatus &status);
 
   // animation
   void setRecordingCP(bool active);
@@ -186,7 +197,6 @@ class MainWindow : public MyWindow {
   int &selectedLayer = imgData.selectedLayer;
   std::set<int> &selectedLayers = imgData.selectedLayers;
   Imguc templateImg, backgroundImg;
-  Imguc textureImg, backTextureImg;
 
   // deformation
   DefData defData;
@@ -198,7 +208,7 @@ class MainWindow : public MyWindow {
   int &defEngMaxIter = defData.defEngMaxIter;
   double &rigidity = defData.rigidity;
   std::chrono::high_resolution_clock::time_point arapTimerLast;
-  PauseStatus deformationsStatus;
+  bool defPaused = false;
 
   // reconstruction
   RecData recData;
@@ -296,6 +306,13 @@ class MainWindow : public MyWindow {
   int autoSmoothAnimFrom = -5, autoSmoothAnimTo = 5, autoSmoothAnimIts = 5;
   CPAnim copiedAnim;
   CPAnim &cpAnimSync = cpData.cpAnimSync;
+  int exportAnimationPreroll = 0;
+  bool exportPerFrameNormals = false;
+  bool exportAnimationWaitForBeginning = true;
+  int exportedFrames = 0;
+  exportgltf::ExportGltf *gltfExporter = nullptr;
+  exportgltf::MatrixXfR exportBaseV, exportBaseN;
+  PauseStatus animStatus;
 };
 
 #endif  // MAINWINDOW_H

@@ -103,6 +103,25 @@ function js_frameExportedToOBJ() {
     }, 2*timeout);
   }
 }
+function js_exportAnimationProgress(progress) {
+  var progressEl = $('#exportAnimationProgress');
+  progressEl.text(progress + "%");
+  progressEl.css("width", progress + "%");
+}
+function js_exportAnimationFinished() {
+  var exportBtnEl = $('#exportAnimationButtonExport');
+  var abortBtnEl = $('#exportAnimationButtonCancel');
+  var progressEl = $('#exportAnimationProgress');
+  exportBtnEl.removeClass('disabled');
+  exportBtnEl.prop('disabled', false);
+  abortBtnEl.addClass('disabled');
+  abortBtnEl.prop('disabled', true);
+  progressEl.addClass('bg-success');
+
+  const content = FS.readFile("/tmp/mm_project.glb");
+  var blob = new Blob([content], { type: "application/octet-stream" });
+  saveAs(blob, "mm_project.glb");
+}
 function js_recordingModeStopped() {
   $('.buttonRecord').removeClass('active');
 }
@@ -126,7 +145,12 @@ function resetToModuleState() {
 }
 
 // event listener
-$(window).keyup(function(e) {
+$(window).keydown(function(e) {
+  if ($('div.modal').is(':visible')) {
+    // skip for modal dialogs
+    return;
+  }
+  
   e.preventDefault();
   if (e.which === 49 || e.which === 97) $('#dropdownImageModeDraw').click();
   if (e.which === 52 || e.which === 100) $('#dropdownImageModeRedraw').click();
@@ -138,6 +162,13 @@ $(window).keyup(function(e) {
   if (e.which === 72) $('#buttonShowControlPins').click();
   if (e.ctrlKey && e.which === 79) $('#buttonOpenProject').click();
   if (e.ctrlKey && e.which === 83) $('#buttonSaveProject').click();
+  if (e.ctrlKey && e.which === 67) Module._copySelectedAnim();
+  if (e.ctrlKey && e.which === 86) Module._pasteSelectedAnim();
+  if (e.ctrlKey && e.which === 65) Module._selectAll();
+  if (e.which === 27) Module._deselectAll();
+  if (e.which === 107 || e.which === 187 || (e.shiftKey && e.which === 187)) Module._offsetSelectedCpAnimsByFrames(1);
+  if (e.which === 109 || e.which === 189) Module._offsetSelectedCpAnimsByFrames(-1);
+  if (e.which === 46 || e.which === 8) Module._removeControlPointOrRegion();
 });
 
 function showRecordButton() {
@@ -157,11 +188,14 @@ function showAnimationModeControls() {
   } else {
     showRecordButton();
   }
+  $('#buttonExportAnimation').removeClass('disabled');
 }
 function hideAnimationModeControls() {
   $('.animationButtons label').removeClass('disabled');
   $('.animationButtons label').addClass('disabled');
   $('.animationButtons label div input').prop('disabled', true);
+  $('#buttonExportAnimation').removeClass('disabled');
+  $('#buttonExportAnimation').addClass('disabled');
 }
 function showGeometryModeControls() {
   $('.buttonsViewOptions div label').removeClass('disabled');
@@ -235,9 +269,6 @@ $('.buttonMode').click(function(e) {
   }, timeout);
 });
 
-$('#buttonAnimateAntelope').click(function() {
-  $('#buttonAnimate').click();
-});
 $('#buttonNewProject, #buttonNewProjectFileMenu').click(function() {
   if (confirm('Do you want to start over from scratch?')) {
     Module._reset();
@@ -357,6 +388,76 @@ $('#buttonPasteAnimation').click(function() {
 $('#buttonExportAsOBJ').click(function() {
   Module._exportAsOBJ();
 });
+function exportAnimationPrerollFramesCheck(el) {
+  const max = parseInt(el.attr('max'));
+  const min = parseInt(el.attr('min'));
+  const curr = el.val();
+  if (curr > max) el.val(max);
+  else if (curr < min) el.val(min);
+}
+$('#exportAnimationPrerollFrames').change(function() {
+  exportAnimationPrerollFramesCheck($(this));
+});
+$('#buttonExportAnimation').click(function() {
+  var prerollFramesEl = $('#exportAnimationPrerollFrames');
+  var progressEl = $('#exportAnimationProgress');
+  const nFrames = Module._getNumberOfAnimationFrames();
+  prerollFramesEl.attr({'min': '0', 'max': nFrames*5});
+  exportAnimationPrerollFramesCheck(prerollFramesEl);
+  progressEl.text("");
+  progressEl.css("width", "0%");
+  progressEl.removeClass('bg-success');
+  $('#exportAnimationNumFrames').text(nFrames);
+//   prerollFramesEl.val(Math.max(Math.round(0.25*nFrames)), 5);
+  $('#modalDialogExportAnimation').modal();
+});
+$('#exportAnimationButtonExport').click(function() {
+  var prerollFramesEl = $('#exportAnimationPrerollFrames');
+  var progressEl = $('#exportAnimationProgress');
+  var resolveDepth = $('#exportAnimationButtonFull').prop("checked");
+  var perFrameNormals = $('#exportAnimationPerFrameNormals').prop("checked");
+  var exportBtnEl = $('#exportAnimationButtonExport');
+  var abortBtnEl = $('#exportAnimationButtonCancel');
+  exportBtnEl.addClass('disabled');
+  exportBtnEl.prop('disabled', true);
+  abortBtnEl.removeClass('disabled');
+  abortBtnEl.prop('disabled', false);
+  progressEl.text("");
+  progressEl.css("width", "0%");
+  progressEl.removeClass('bg-success');
+  Module._exportAnimationStart(prerollFramesEl.val(), resolveDepth, perFrameNormals);
+});
+$('#exportAnimationButtonCancel').click(function() {
+  var exportBtnEl = $('#exportAnimationButtonExport');
+  var abortBtnEl = $('#exportAnimationButtonCancel');
+  var progressEl = $('#exportAnimationProgress');
+  exportBtnEl.removeClass('disabled');
+  exportBtnEl.prop('disabled', false);
+  abortBtnEl.addClass('disabled');
+  abortBtnEl.prop('disabled', true);
+  progressEl.text("");
+  progressEl.css("width", "0%");
+  Module._exportAnimationAbort();
+});
+$('#modalDialogExportAnimation').on('hide.bs.modal', function() {
+  var ret = true;
+  if (Module._exportAnimationRunning()) {
+    ret = confirm('Are you sure you want cancel the export?');
+    if (ret) $('#exportAnimationButtonCancel').click();
+  }
+  return ret;
+});
+
+// after showing modal dialogs, disable SDL keyboard events and pause animation
+$('div.modal').on('show.bs.modal', function() {
+  Module._disableKeyboardEvents();
+  Module._pauseAnimation();
+});
+// after hiding modal dialogs, enable SDL keyboard events and resume animation
+$('div.modal').on('hide.bs.modal', function() {
+  Module._enableKeyboardEvents();
+  Module._resumeAnimation();
+});
 
 // initialize tooltips
 $('#buttonShowHelp[data-tooltip="tooltip"]').tooltip({
@@ -389,3 +490,4 @@ $(window).on('mainContentVisible', function() {
     $('[data-tooltip="tooltip"]').tooltip('hide');
   });
 });
+
