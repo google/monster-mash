@@ -79,6 +79,9 @@ if (CMAKE_CXX_COMPILER MATCHES "em\\+\\+$")
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O2 -g")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
+
+    # Dirty hack: FE_UNDERFLOW is missing in emscripten (https://github.com/emscripten-core/emscripten/commit/3d6116296e8bc2ed601f109edcbbd9e33ed3b705)
+    set(DEFINES ${DEFINES} FE_UNDERFLOW=16)
 else()
     message("Compiling for Linux")
     # SDL2
