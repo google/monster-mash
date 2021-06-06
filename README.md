@@ -24,6 +24,16 @@ This project uses CMake (https://cmake.org) for building. Some third party libra
 
 You can build the complete web application using emscripten (https://emscripten.org/), or a simplified desktop version (i.e., only a canvas without a web-based UI) using clang (https://clang.llvm.org/) or gcc (https://gcc.gnu.org/).
 
+### Building on Docker
+
+* Install Docker and Git.
+* Clone this repository into your home directory and change directory to the repo:
+  ```
+  git clone https://github.com/google/monster-mash.git ~/monster-mash && cd ~/monster-mash
+  ```
+* `docker build -t monster-mash .`
+* `docker run -p 8000:8000 -ti --rm --name monster-mash monster-mash`
+
 ### Building on Linux
 
 #### Instructions for building on Ubuntu 20.04
