@@ -92,25 +92,32 @@ bool MainWindow::paintEvent() {
     if (!backgroundImg.isNull() && shadingOpts.showBackgroundImg)
       painter.drawTexture(glData.backgroundImgTexName);
 
+    // animation
+    if (manipulationMode.mode == ANIMATE_MODE) {
+      cpAnimationPlaybackAndRecord();
+    }
+
     // draw 3D model
     computeNormals(shadingOpts.useNormalSmoothing);
     drawGeometryMode(painter, painterOther);
 
     // deformation
-    double defDiff = handleDeformations();
-    //    DEBUG_CMD_MM(cout << defDiff << endl;);
-    if (defDiff < 0.01 &&
-        !(manipulationMode.mode == ANIMATE_MODE && isAnimationPlaying() &&
-          !cpData.cpsAnim
-               .empty())  // always repaint if there's animation playing
-    ) {
+    if (!defPaused) {
+      double defDiff = handleDeformations();
+      //    DEBUG_CMD_MM(cout << defDiff << endl;);
+      if (defDiff < 0.01 &&
+          !(manipulationMode.mode == ANIMATE_MODE && isAnimationPlaying() &&
+            !cpData.cpsAnim
+                 .empty())  // always repaint if there's animation playing
+      ) {
+        repaint = false;
+      }
+    } else
       repaint = false;
-    }
 
-    if (manipulationMode.mode == ANIMATE_MODE) {
-      // animation
-      cpAnimationPlaybackAndRecord();
-    }
+    // export animation frame
+    //    cout << exportAnimationRunning() << endl;
+    if (exportAnimationRunning()) exportAnimationFrame();
 
     if (showMessages) drawMessages(painter);
   }
@@ -694,11 +701,16 @@ void MainWindow::keyPressEvent(const MyKeyEvent &keyEvent) {
   }
   if (keyEvent.key == SDLK_w) {
     //    exportAsOBJ("/tmp", "mm_frame", true);
-    writeOBJ("/tmp/mm_frame.obj", defData.VCurr, defData.Faces, defData.normals,
-             defData.Faces, MatrixXd(), defData.Faces);
-  }
-#endif
 
+    //    writeOBJ("/tmp/mm_frame.obj", defData.VCurr, defData.Faces,
+    //    defData.normals,
+    //             defData.Faces, MatrixXd(), defData.Faces);
+
+    if (!exportAnimationRunning())
+      exportAnimationStart(0, false, false);
+    else
+      exportAnimationStop();
+  }
   if (keyEvent.ctrlModifier) {
     if (keyEvent.key == SDLK_c) {
       // CTRL+C
@@ -726,6 +738,7 @@ void MainWindow::keyPressEvent(const MyKeyEvent &keyEvent) {
   if (keyEvent.key == SDLK_DELETE || keyEvent.key == SDLK_BACKSPACE) {
     removeControlPointOrRegion();
   }
+#endif
 }
 
 int MainWindow::selectLayerUnderCoords(int x, int y, bool nearest) {
@@ -1571,7 +1584,6 @@ void MainWindow::reset() {
   selectedLayers.clear();
   templateImg.setNull();
   backgroundImg.setNull();
-  textureImg.setNull();
   showModel = false;
 
   // reset reconstruction data
@@ -2105,7 +2117,7 @@ void MainWindow::cpAnimationPlaybackAndRecord() {
     }
 
     // playback
-    if (playAnimation && !cpsAnim.empty()) {
+    if (playAnimation && !manualTimepoint && !cpsAnim.empty()) {
       defEng.solveForZ = false;  // pause z-deformation
     }
     if (playAnimation || recordCP) {
@@ -2366,6 +2378,21 @@ void MainWindow::resetView() {
   repaint = true;
 }
 
+void MainWindow::pauseAll(PauseStatus &status) {
+  if (manipulationMode.mode != ANIMATE_MODE) return;
+  status.animPaused = !cpData.playAnimation;
+  cpData.playAnimation = false;
+  defPaused = true;
+  repaint = true;
+}
+
+void MainWindow::resumeAll(PauseStatus &status) {
+  if (manipulationMode.mode != ANIMATE_MODE) return;
+  cpData.playAnimation = !status.animPaused;
+  defPaused = false;
+  repaint = true;
+}
+
 void MainWindow::exportAsOBJ(const std::string &outDir,
                              const std::string &outFnWithoutExtension,
                              bool saveTexture) {
@@ -2410,3 +2437,143 @@ void MainWindow::exportAsOBJ(const std::string &outDir,
     templateImg.savePNG(outDir + "/" + outFnWithoutExtension + ".png");
   }
 }
+
+void MainWindow::exportAnimationStart(int preroll, bool solveForZ,
+                                      bool perFrameNormals) {
+  const int nFrames = cpAnimSync.getLength();
+  manualTimepoint = true;
+  if (nFrames > 0) {
+    cpAnimSync.lastT = (100 * nFrames - preroll) % nFrames;
+  }
+  cpData.playAnimation = true;
+  defEng.solveForZ = solveForZ;  // resume z-deformation
+  defPaused = false;
+
+  if (gltfExporter != nullptr) delete gltfExporter;
+  gltfExporter = new exportgltf::ExportGltf;
+  exportAnimationWaitForBeginning = true;
+  exportAnimationPreroll = preroll;
+  exportPerFrameNormals = perFrameNormals;
+  exportedFrames = 0;
+
+  repaint = true;
+
+  DEBUG_CMD_MM(cout << "exportAnimationStart" << endl;);
+}
+
+void MainWindow::exportAnimationStop(bool exportModel) {
+  manualTimepoint = false;
+  defEng.solveForZ = false;  // pause z-deformation
+  cpData.playAnimation = false;
+  defPaused = true;
+
+  if (gltfExporter != nullptr) {
+    if (exportModel) {
+      gltfExporter->exportStop("/tmp/mm_project.glb", true);
+#ifdef __EMSCRIPTEN__
+      EM_ASM(js_exportAnimationFinished(););
+#endif
+    }
+    delete gltfExporter;
+    gltfExporter = nullptr;
+  }
+
+  repaint = true;
+
+  DEBUG_CMD_MM(cout << "exportAnimationStop" << endl;);
+}
+
+void MainWindow::exportAnimationFrame() {
+  if (gltfExporter == nullptr) {
+    DEBUG_CMD_MM(cerr << "exportAnimationFrame: gltfModel == nullptr" << endl;);
+    return;
+  }
+
+  const int nFrames = cpAnimSync.getLength();
+  bool exportSingleFrame = nFrames == 0;
+
+  int prerollCurr = 0;
+  if (!exportSingleFrame) {
+    const int prerollStart = (100 * nFrames - exportAnimationPreroll) % nFrames;
+    prerollCurr = static_cast<int>(cpAnimSync.lastT) - prerollStart;
+    if (exportAnimationWaitForBeginning) {
+      if (prerollCurr >= exportAnimationPreroll) {
+        exportAnimationWaitForBeginning = false;
+      } else {
+        DEBUG_CMD_MM(cout << "exportAnimationFrame: waiting for beginning ("
+                          << cpAnimSync.lastT << ")" << endl;);
+      }
+    }
+  } else {
+    exportAnimationWaitForBeginning = false;
+  }
+
+  if (!exportAnimationWaitForBeginning) {
+    prerollCurr = exportAnimationPreroll;
+    DEBUG_CMD_MM(cout << "exportAnimationFrame: " << exportedFrames << endl;);
+    exportgltf::MatrixXfR V = defData.VCurr.cast<float>();
+    V *= 10.0 / viewportW;
+    V.array().rowwise() *= RowVector3f(1, -1, -1).array();
+    V.rowwise() += RowVector3f(-5, 5, 0);
+
+    const int nFrames = cpAnimSync.getLength();
+    const bool hasTexture = !templateImg.isNull();
+
+    exportgltf::MatrixXfR N;
+    if (exportedFrames == 0 || exportPerFrameNormals) {
+      N = defData.normals.cast<float>();
+      N.array().rowwise() *= RowVector3f(1, -1, -1).array();
+    }
+    if (exportedFrames == 0) {
+      exportBaseV = V;
+      exportBaseN = N;
+      exportgltf::MatrixXusR F = defData.Faces.cast<unsigned short>();
+
+      exportgltf::MatrixXfR TC;
+      if (hasTexture) {
+        TC = (defData.VRestOrig.leftCols(2).cast<float>().array().rowwise() /
+              Array2f(templateImg.w, templateImg.h).transpose());
+      }
+
+      gltfExporter->exportStart(V, N, F, TC, nFrames, exportPerFrameNormals, 24,
+                                templateImg);
+      gltfExporter->exportFullModel(V, N, F, TC);
+    } else {
+      V -= exportBaseV;
+      if (exportPerFrameNormals) N -= exportBaseN;
+      gltfExporter->exportMorphTarget(V, N, exportedFrames);
+    }
+    exportedFrames++;
+  }
+
+  // update progress bar
+  int progress = 100;
+  if (!exportSingleFrame) {
+    progress = round(100.0 * (prerollCurr + exportedFrames) /
+                     (nFrames + exportAnimationPreroll));
+  }
+#ifdef __EMSCRIPTEN__
+  EM_ASM({ js_exportAnimationProgress($0); }, progress);
+#endif
+
+  cpAnimSync.lastT++;
+  if (cpAnimSync.lastT >= 100 * nFrames) cpAnimSync.lastT = 0;
+
+  if (!exportAnimationWaitForBeginning) {
+    if (exportSingleFrame ||
+        (nFrames > 0 && (static_cast<int>(cpAnimSync.lastT) % nFrames == 0))) {
+      // reached the end of animation
+      exportAnimationStop();
+      return;
+    }
+  }
+
+  repaint = true;
+}
+
+bool MainWindow::exportAnimationRunning() { return gltfExporter != nullptr; }
+
+void MainWindow::pauseAnimation() { pauseAll(animStatus); }
+void MainWindow::resumeAnimation() { resumeAll(animStatus); }
+
+int MainWindow::getNumberOfAnimationFrames() { return cpAnimSync.getLength(); }

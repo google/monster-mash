@@ -142,7 +142,7 @@ struct RecData {
   bool interiorDepthConditions = false;
 };
 
-struct PauseStatus{
+struct PauseStatus {
   bool defPaused = false;
   bool animPaused = false;
 };

@@ -81,6 +81,9 @@ class MyWindow {
   void setMouseEventsSimulationByTouch(bool enable = true);
   int getWidth() const;
   int getHeight() const;
+  void setKeyboardEventState(bool enabled);
+  void enableKeyboardEvents();
+  void disableKeyboardEvents();
 
  protected:
   virtual bool paintEvent() = 0;

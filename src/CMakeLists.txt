@@ -26,6 +26,7 @@ set(SOURCES
     mypainter.cpp
     mywindow.cpp
     def3dsdl.cpp
+    exportgltf.cpp
     ../third_party/ir3d-utils/regionToMesh.cpp
     ../third_party/ir3d-utils/MeshBuilder.cpp
     ../third_party/image/imageReadWrite.cpp
@@ -40,6 +41,7 @@ set(SOURCES
     ../third_party/zip-mod/zip.c
     ../third_party/SDL2_gfx-mod/SDL2_gfxPrimitives-mod.c
     ../third_party/SDL2_gfx/SDL2_rotozoom.c
+    ../third_party/tinygltf/tinygltf.cpp
 )
 
 set(HEADERS
@@ -53,6 +55,7 @@ set(HEADERS
     mywindow.h
     def3dsdl.h
     macros.h
+    exportgltf.h
     ../third_party/ir3d-utils/regionToMesh.h
     ../third_party/image/image.h
     ../third_party/image/imageReadWrite.hpp
@@ -124,6 +127,10 @@ set(DEFINES ${DEFINES}
     EIGEN_MPL2_ONLY
     EIGEN_SPARSESOLVERBASE_H
     _SDL2_gfxPrimitives_h
+    TINYGLTF_NO_STB_IMAGE
+    TINYGLTF_NO_STB_IMAGE_WRITE
+    TINYGLTF_NO_EXTERNAL_IMAGE
+    TINYGLTF_USE_CPP14
     APP_VERSION=${APP_VERSION_VAR}
 )
 
@@ -142,6 +149,7 @@ set(INCLUDEPATH
     ../third_party/zip-mod
     ../third_party/SDL2_gfx
     ../third_party/SDL2_gfx-mod
+    ../third_party/tinygltf
     ${SDL2_INCLUDE_DIRS}
 )
 

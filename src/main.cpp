@@ -37,6 +37,10 @@ EMSCRIPTEN_KEEPALIVE void pasteSelectedAnim() {
   mainWindow.pasteSelectedAnim();
 }
 
+EMSCRIPTEN_KEEPALIVE void offsetSelectedCpAnimsByFrames(double offset) {
+  mainWindow.offsetSelectedCpAnimsByFrames(offset);
+}
+
 EMSCRIPTEN_KEEPALIVE void loadBackgroundImage() {
   mainWindow.loadBackgroundImageFromFile();
 }
@@ -206,6 +210,41 @@ EMSCRIPTEN_KEEPALIVE void openExampleProject(unsigned int id) {
 EMSCRIPTEN_KEEPALIVE void exportAsOBJ() {
   mainWindow.exportAsOBJ("/tmp", "mm_frame", true);
   EM_ASM(js_frameExportedToOBJ(););
+}
+
+EMSCRIPTEN_KEEPALIVE void exportAnimationStart(int preroll, bool solveForZ,
+                                               bool perFrameNormals) {
+  if (!mainWindow.exportAnimationRunning()) {
+    mainWindow.exportAnimationStart(preroll, solveForZ, perFrameNormals);
+  } else {
+    mainWindow.exportAnimationStop();
+  }
+}
+
+EMSCRIPTEN_KEEPALIVE void exportAnimationAbort() {
+  if (mainWindow.exportAnimationRunning()) {
+    mainWindow.exportAnimationStop(false);
+  }
+}
+
+EMSCRIPTEN_KEEPALIVE bool exportAnimationRunning() {
+  return mainWindow.exportAnimationRunning();
+}
+
+EMSCRIPTEN_KEEPALIVE void pauseAnimation() { mainWindow.pauseAnimation(); }
+
+EMSCRIPTEN_KEEPALIVE void resumeAnimation() { mainWindow.resumeAnimation(); }
+
+EMSCRIPTEN_KEEPALIVE int getNumberOfAnimationFrames() {
+  return mainWindow.getNumberOfAnimationFrames();
+}
+
+EMSCRIPTEN_KEEPALIVE void enableKeyboardEvents() {
+  mainWindow.enableKeyboardEvents();
+}
+
+EMSCRIPTEN_KEEPALIVE void disableKeyboardEvents() {
+  mainWindow.disableKeyboardEvents();
 }
 }
 #endif
