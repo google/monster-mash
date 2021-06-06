@@ -37,6 +37,9 @@ RUN mkdir includes \
     && cp ../../../../third_party/FileSaver/FileSaver.js . \
     && cp ../../../../third_party/emscripten-ui/module.js .
 
+COPY docker_download_imgs.py docker_download_imgs.py
+RUN python3 docker_download_imgs.py
+
 EXPOSE 8000
 
 ENTRYPOINT ["python3"]
