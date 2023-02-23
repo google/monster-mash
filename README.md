@@ -49,7 +49,7 @@ You can build the complete web application using emscripten (https://emscripten.
 * Build the project:
   * For the complete web version, build the project using emscripten:
     ```
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=PATH_TO_EMSDK/upstream/emscripten/emcc -DCMAKE_CXX_COMPILER=PATH_TO_EMSDK/upstream/emscripten/em++ ../../src && make
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=PATH_TO_EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake ../../src && make
     ```
     (Replace PATH_TO_EMSDK with the path to your emsdk directory.)
   * For the desktop version, build the project using clang/gcc:
