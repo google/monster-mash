@@ -169,6 +169,10 @@ $(window).keydown(function(e) {
   if (e.which === 107 || e.which === 187 || (e.shiftKey && e.which === 187)) Module._offsetSelectedCpAnimsByFrames(1);
   if (e.which === 109 || e.which === 189) Module._offsetSelectedCpAnimsByFrames(-1);
   if (e.which === 46 || e.which === 8) Module._removeControlPointOrRegion();
+  if (e.which === 33) Module._moveSelectedLayersInDepth(1, true); // PageUp
+  if (e.which === 34) Module._moveSelectedLayersInDepth(-1, true); // PageDown
+  if (e.which === 36) Module._moveSelectedLayersInDepth(Module._getNumberOfLayers(), false); // Home
+  if (e.which === 35) Module._moveSelectedLayersInDepth(-Module._getNumberOfLayers(), false); // End
 });
 
 function showRecordButton() {

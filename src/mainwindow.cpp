@@ -738,6 +738,18 @@ void MainWindow::keyPressEvent(const MyKeyEvent &keyEvent) {
   if (keyEvent.key == SDLK_DELETE || keyEvent.key == SDLK_BACKSPACE) {
     removeControlPointOrRegion();
   }
+  if (keyEvent.key == SDLK_PAGEUP) {
+    moveSelectedLayersInDepth(1, true);
+  }
+  if (keyEvent.key == SDLK_PAGEDOWN) {
+    moveSelectedLayersInDepth(-1, true);
+  }
+  if (keyEvent.key == SDLK_HOME) {
+    moveSelectedLayersInDepth(layers.size(), false);
+  }
+  if (keyEvent.key == SDLK_END) {
+    moveSelectedLayersInDepth(-layers.size(), false);
+  }
 #endif
 }
 
@@ -2583,3 +2595,101 @@ void MainWindow::pauseAnimation() { pauseAll(animStatus); }
 void MainWindow::resumeAnimation() { resumeAll(animStatus); }
 
 int MainWindow::getNumberOfAnimationFrames() { return cpAnimSync.getLength(); }
+
+void MainWindow::moveSelectedLayersInDepth(int step, bool overlapping) {
+  if (selectedLayer == -1 || step == 0) return;
+
+  // Find overlaps of each selected layer with other non-selected layers and
+  // create an overlap matrix (first column is a flag denoting whether a layer
+  // is selected).
+  MatrixXi OM(layers.size(), layers.size() + 1);
+  OM.fill(0);  // Empty values are 0.
+  if (overlapping) {
+    // Find overlapping layers.
+    for (const int selLayerId : selectedLayers) {
+      OM(selLayerId, 0) = 1;
+      const Imguc &ISel = regionImgs[layers[selLayerId]];
+      forlist(layerId, layers) {
+        // Skip selected layers.
+        if (selectedLayers.find(layerId) != selectedLayers.end()) continue;
+        // Check overlap.
+        const int regId = layers[layerId];
+        const Imguc &I = regionImgs[regId];
+        bool exit = false;
+        fora(y, 0, ISel.h) {
+          fora(x, 0, ISel.w) {
+            if (ISel(x, y, 0) == 0 || I(x, y, 0) == 0) continue;
+            // Regions are overlapping.
+            OM(layerId, selLayerId + 1) = 1;
+            exit = true;
+            break;
+          }
+          if (exit) break;
+        }
+      }
+    }
+  } else {
+    // Do not deal with overlaps, instead consider all layers.
+    for (const int selLayerId : selectedLayers) {
+      OM(selLayerId, 0) = 1;
+      forlist(layerId, layers) {
+        // Skip selected layers.
+        if (selectedLayers.find(layerId) != selectedLayers.end()) continue;
+        OM(layerId, selLayerId + 1) = 1;
+      }
+    }
+  }
+  DEBUG_CMD_MM(cout << "Overlap matrix:" << endl << OM << endl;);
+
+  // Move layers: Proceed with selected layers ordered in depth.
+  // For moving layers closer in depth, start with the nearest layer. Move each
+  // layer so that it is in front of n nearest overlapping objects (where
+  // n=abs(step)) but make sure that the relative order of selected objects
+  // remains unchanged. For moving layers further in depth, start with the
+  // furthest layer.
+  for (int r1 = (step > 0 ? OM.rows() - 1 : 0);
+       (step > 0 ? r1 >= 0 : r1 < OM.rows()); (step > 0 ? r1-- : r1++)) {
+    const bool isSelected1 = OM(r1, 0);
+    if (!isSelected1) continue;
+    const int selRow = r1;
+    int steps = 0;
+    int firstRow = 0;
+    int finalRow = 0;
+    int sign = (step > 0 ? 1 : -1);
+    for (int r2 = selRow; (step > 0 ? r2 < OM.rows() - 1 : r2 >= 1);
+         (step > 0 ? r2++ : r2--)) {
+      const bool isSelected2 = OM(r2 + sign, 0);
+      if (isSelected2) break;
+
+      OM.row(r2).swap(OM.row(r2 + sign));
+      swap(layers[r2], layers[r2 + sign]);
+      DEBUG_CMD_MM(cout << "Overlap matrix (" << r2 << "):" << endl
+                        << OM << endl;);
+
+      if (OM(r2, selRow + 1)) {
+        steps++;
+        firstRow = selRow;
+        finalRow = r2 + sign;
+        if (steps >= abs(step)) break;
+      }
+    }
+    if (steps > 0) {
+      if (firstRow == selectedLayer) {
+        DEBUG_CMD_MM(cout << "Selected layer: " << selectedLayer << " -> "
+                          << finalRow << endl;);
+        selectedLayer = finalRow;
+      }
+      DEBUG_CMD_MM(cout << "Moved layer " << firstRow << " -> " << finalRow
+                        << ", total steps: " << steps << endl;);
+    }
+  }
+
+  // Recreate selection.
+  selectedLayers.clear();
+  fora(i, 0, OM.rows()) {
+    if (OM(i, 0)) selectedLayers.insert(i);
+  }
+  recreateMergedImgs();
+}
+
+int MainWindow::getNumberOfLayers() { return layers.size(); }
