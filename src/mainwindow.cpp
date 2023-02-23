@@ -2413,13 +2413,19 @@ void MainWindow::exportAsOBJ(const std::string &outDir,
   writeOBJ(objFn, V, defData.Faces, N, defData.Faces, textureCoords,
            defData.Faces);
   if (!templateImg.isNull() && saveTexture) {
-    // write material to a file
+    // Write material to the beginning of the exported file.
     {
-      ofstream stream(objFn, ofstream::out | ofstream::app);
+      ostringstream objContent;
+      ifstream istr(objFn);
+      objContent << istr.rdbuf();
+      istr.close();
+
+      ofstream stream(objFn, ofstream::out);
       if (stream.is_open()) {
         stream << "s 1" << endl;
         stream << "mtllib " << outFnWithoutExtension << ".mtl" << endl;
         stream << "usemtl Textured" << endl;
+        stream << objContent.str();
         stream.close();
       }
     }
