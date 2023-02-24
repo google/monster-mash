@@ -246,6 +246,15 @@ EMSCRIPTEN_KEEPALIVE void enableKeyboardEvents() {
 EMSCRIPTEN_KEEPALIVE void disableKeyboardEvents() {
   mainWindow.disableKeyboardEvents();
 }
+
+EMSCRIPTEN_KEEPALIVE void moveSelectedLayersInDepth(int step,
+                                                    bool overlapping) {
+  mainWindow.moveSelectedLayersInDepth(step, overlapping);
+}
+
+EMSCRIPTEN_KEEPALIVE int getNumberOfLayers() {
+  return mainWindow.getNumberOfLayers();
+}
 }
 #endif
 

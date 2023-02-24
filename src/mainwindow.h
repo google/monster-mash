@@ -62,6 +62,8 @@ class MainWindow : public MyWindow {
   void resetView();
   void exportAsOBJ(const std::string &outDir,
                    const std::string &outFnWithoutExtension, bool saveTexture);
+  int getNumberOfLayers();
+  void moveSelectedLayersInDepth(int step, bool overlapping);
 
   // animation
   void offsetSelectedCpAnimsByFrames(double offset);
