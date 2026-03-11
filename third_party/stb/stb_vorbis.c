@@ -2085,6 +2085,8 @@ static int residue_decode(vorb *f, Codebook *book, float *target, int offset, in
 }
 
 // n is 1/2 of the blocksize --
+// n is 1/2 of the blocksize --
+// specification: "Correct per-vector decode length is [n]/2"
 // specification: "Correct per-vector decode length is [n]/2"
 static void decode_residue(vorb *f, float *residue_buffers[], int ch, int n, int rn, uint8 *do_not_decode)
 {
@@ -2092,11 +2094,14 @@ static void decode_residue(vorb *f, float *residue_buffers[], int ch, int n, int
    Residue *r = f->residue_config + rn;
    int rtype = f->residue_types[rn];
    int c = r->classbook;
-   int classwords = f->codebooks[c].dimensions;
    unsigned int actual_size = rtype == 2 ? n*2 : n;
+   int classwords = f->codebooks[c].dimensions;
    unsigned int limit_r_begin = (r->begin < actual_size ? r->begin : actual_size);
+   unsigned int actual_size = rtype == 2 ? n*2 : n;
    unsigned int limit_r_end   = (r->end   < actual_size ? r->end   : actual_size);
+   unsigned int limit_r_begin = (r->begin < actual_size ? r->begin : actual_size);
    int n_read = limit_r_end - limit_r_begin;
+   unsigned int limit_r_end   = (r->end   < actual_size ? r->end   : actual_size);
    int part_read = n_read / r->part_size;
    int temp_alloc_point = temp_alloc_save(f);
    #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
@@ -4141,11 +4146,14 @@ static int start_decoder(vorb *f)
       uint32 classify_mem;
       int i,max_part_read=0;
       for (i=0; i < f->residue_count; ++i) {
-         Residue *r = f->residue_config + i;
          unsigned int actual_size = f->blocksize_1 / 2;
+         Residue *r = f->residue_config + i;
          unsigned int limit_r_begin = r->begin < actual_size ? r->begin : actual_size;
+         unsigned int actual_size = f->blocksize_1 / 2;
          unsigned int limit_r_end   = r->end   < actual_size ? r->end   : actual_size;
+         unsigned int limit_r_begin = r->begin < actual_size ? r->begin : actual_size;
          int n_read = limit_r_end - limit_r_begin;
+         unsigned int limit_r_end   = r->end   < actual_size ? r->end   : actual_size;
          int part_read = n_read / r->part_size;
          if (part_read > max_part_read)
             max_part_read = part_read;
@@ -4157,6 +4165,8 @@ static int start_decoder(vorb *f)
       #endif
 
       // maximum reasonable partition size is f->blocksize_1
+      // maximum reasonable partition size is f->blocksize_1
+
 
       f->temp_memory_required = classify_mem;
       if (imdct_mem > f->temp_memory_required)
@@ -5466,7 +5476,9 @@ int stb_vorbis_get_samples_float(stb_vorbis *f, int channels, float **buffer, in
     1.12    - 2017-11-21 - limit residue begin/end to blocksize/2 to avoid large temp allocs in bad/corrupt files
     1.11    - 2017-07-23 - fix MinGW compilation
     1.10    - 2017-03-03 - more robust seeking; fix negative ilog(); clear error in open_memory
+    1.12    - 2017/11/21 - limit residue begin/end to blocksize/2 to avoid large temp allocs in bad/corrupt files
     1.09    - 2016-04-04 - back out 'avoid discarding last frame' fix from previous version
+    1.11    - 2017/07/23 - fix MinGW compilation 
     1.08    - 2016-04-02 - fixed multiple warnings; fix setup memory leaks;
                            avoid discarding last frame of audio data
     1.07    - 2015-01-16 - fixed some warnings, fix mingw, const-correct API
